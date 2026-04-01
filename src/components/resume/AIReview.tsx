@@ -18,10 +18,20 @@ export function AIReview({ sectionName, content, onAccept }: AIReviewProps) {
   const [loading, setLoading] = useState(false);
   const [refinement, setRefinement] = useState<RefineSectionContentOutput | null>(null);
   const [gaps, setGaps] = useState<DetectGapsAndSuggestImprovementsOutput | null>(null);
+  const [error, setError] = useState('');
+
+  React.useEffect(() => {
+    if (refinement || gaps || error) {
+      setRefinement(null);
+      setGaps(null);
+      setError('');
+    }
+  }, [content]);
 
   const handleAIAction = async () => {
     if (!content.trim()) return;
     setLoading(true);
+    setError('');
     try {
       const [refinementRes, gapsRes] = await Promise.all([
         refineSectionContent({ sectionName, sectionContent: content }),
@@ -31,6 +41,7 @@ export function AIReview({ sectionName, content, onAccept }: AIReviewProps) {
       setGaps(gapsRes);
     } catch (error) {
       console.error("AI Error:", error);
+      setError((error as Error)?.message || 'AI assist failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -56,6 +67,13 @@ export function AIReview({ sectionName, content, onAccept }: AIReviewProps) {
           <Loader2 className="w-4 h-4 animate-spin" />
           <span>AI is analyzing your content...</span>
         </div>
+      )}
+
+      {error && (
+        <Alert variant="destructive" className="border-red-200 bg-red-50">
+          <AlertTitle className="text-red-800 text-sm">AI Assist Error</AlertTitle>
+          <AlertDescription className="text-red-700 text-xs">{error}</AlertDescription>
+        </Alert>
       )}
 
       {refinement && (

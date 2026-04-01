@@ -23,8 +23,8 @@ export function Editor() {
   };
 
   const handlePhoneInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    updateData({ personalInfo: { ...data.personalInfo, phone: value } });
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+    updateData({ personalInfo: { ...data.personalInfo, phone: digits } });
   };
 
   // Accepts any valid email (user@domain.tld)
@@ -132,13 +132,14 @@ export function Editor() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label>Phone (Numbers only)</Label>
+                <Label>Phone (Numbers only, max 10 digits)</Label>
                 <Input
                   type="tel"
                   value={data.personalInfo.phone}
                   onChange={handlePhoneInput}
                   onFocus={() => setActiveSection('personal')}
                   placeholder="1234567890"
+                  maxLength={10}
                 />
               </div>
               <div className="space-y-2">
@@ -283,8 +284,8 @@ export function Editor() {
                     </div>
                     <div className="md:col-span-2 space-y-2">
                       <Label>Duration Period</Label>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1">
+                      <div className="space-y-2">
+                        <div>
                           <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">Start Date</Label>
                           <MonthYearPicker
                             value={exp.startDate}
@@ -296,12 +297,12 @@ export function Editor() {
                             }}
                           />
                         </div>
-                        <ArrowRight className="h-4 w-4 mt-6 text-muted-foreground" />
-                        <div className="flex-1">
+                        <div>
                           <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">End Date (or Present)</Label>
                           <MonthYearPicker
                             value={exp.endDate}
                             onFocus={() => setActiveSection('experience')}
+                            allowPresent
                             onChange={(val) => {
                               const newList = [...data.experience];
                               newList[idx].endDate = val;
