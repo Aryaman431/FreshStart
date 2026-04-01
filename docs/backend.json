@@ -1,0 +1,858 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user account on the FreshStart Resume Builder platform. This entity stores basic user information required for session persistence and resume ownership.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user, used for authentication (in conjunction with an external system) and contact. Must be unique.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the user, used for personalization and resume PDF naming."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the user, used for personalization and resume PDF naming."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user account was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user account was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "firstName",
+        "lastName",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Resume": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Resume",
+      "type": "object",
+      "description": "Represents a single resume document created by a user. This entity acts as a central manifest, holding references to all its constituent sections.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Resume entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who owns this resume. (Relationship: User 1:N Resume)"
+        },
+        "title": {
+          "type": "string",
+          "description": "A user-defined title for the resume (e.g., 'My Software Engineer Resume')."
+        },
+        "templateId": {
+          "type": "string",
+          "description": "Identifier for the resume template used. For v1, this will typically be a default ID (e.g., 'fresher-default-v1')."
+        },
+        "theme": {
+          "type": "string",
+          "description": "The chosen accent color theme for the resume (e.g., 'blue', 'green', 'purple')."
+        },
+        "currentProgress": {
+          "type": "number",
+          "description": "A numerical representation (0-100) of the resume's completion percentage."
+        },
+        "personalInformationId": {
+          "type": "string",
+          "description": "Reference to the PersonalInformation entity for this resume. (Relationship: Resume 1:1 PersonalInformation)"
+        },
+        "professionalSummaryId": {
+          "type": "string",
+          "description": "Reference to the ProfessionalSummary entity for this resume. (Relationship: Resume 1:1 ProfessionalSummary)"
+        },
+        "educationEntryIds": {
+          "type": "array",
+          "description": "References to EducationEntry entities associated with this resume. (Relationship: Resume 1:N EducationEntry)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "skills": {
+          "type": "array",
+          "description": "A list of technical skills, tools, and languages associated with the resume, entered as tags. For v1, this is a simple list of strings.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "projectIds": {
+          "type": "array",
+          "description": "References to Project entities associated with this resume. (Relationship: Resume 1:N Project)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "internshipExperienceIds": {
+          "type": "array",
+          "description": "References to InternshipExperience entities associated with this resume. (Relationship: Resume 1:N InternshipExperience)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "certificationIds": {
+          "type": "array",
+          "description": "References to Certification entities associated with this resume. (Relationship: Resume 1:N Certification)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "achievementAwardIds": {
+          "type": "array",
+          "description": "References to AchievementAward entities associated with this resume. (Relationship: Resume 1:N AchievementAward)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "extracurricularIds": {
+          "type": "array",
+          "description": "References to Extracurricular entities associated with this resume. (Relationship: Resume 1:N Extracurricular)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "languageProficiencyIds": {
+          "type": "array",
+          "description": "References to LanguageProficiency entities associated with this resume. (Relationship: Resume 1:N LanguageProficiency)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the resume was first created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the resume was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "title",
+        "templateId",
+        "theme",
+        "currentProgress",
+        "personalInformationId",
+        "professionalSummaryId",
+        "educationEntryIds",
+        "skills",
+        "projectIds",
+        "internshipExperienceIds",
+        "certificationIds",
+        "achievementAwardIds",
+        "extracurricularIds",
+        "languageProficiencyIds",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PersonalInformation": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PersonalInformation",
+      "type": "object",
+      "description": "Stores the personal contact and identification details (e.g., name, email, phone) for a specific resume.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the PersonalInformation entity."
+        },
+        "resumeId": {
+          "type": "string",
+          "description": "Reference to the Resume this personal information belongs to. (Relationship: Resume 1:1 PersonalInformation)"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "The full name of the resume owner."
+        },
+        "email": {
+          "type": "string",
+          "description": "The primary email address for contact.",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "The primary phone number for contact."
+        },
+        "linkedInUrl": {
+          "type": "string",
+          "description": "URL to the user's LinkedIn profile.",
+          "format": "uri"
+        },
+        "gitHubUrl": {
+          "type": "string",
+          "description": "URL to the user's GitHub profile.",
+          "format": "uri"
+        },
+        "city": {
+          "type": "string",
+          "description": "The current city of residence."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this personal information record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when this personal information record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "resumeId",
+        "fullName",
+        "email",
+        "phone",
+        "city",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ProfessionalSummary": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ProfessionalSummary",
+      "type": "object",
+      "description": "Stores the professional summary text for a specific resume. This section is designed for a concise overview of the user's career aspirations and qualifications.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ProfessionalSummary entity."
+        },
+        "resumeId": {
+          "type": "string",
+          "description": "Reference to the Resume this professional summary belongs to. (Relationship: Resume 1:1 ProfessionalSummary)"
+        },
+        "content": {
+          "type": "string",
+          "description": "The 2-3 sentence professional summary text, potentially refined by AI."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this professional summary record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when this professional summary record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "resumeId",
+        "content",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "EducationEntry": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "EducationEntry",
+      "type": "object",
+      "description": "Represents a single educational qualification or degree listed on a resume. Users can add multiple education entries.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the EducationEntry entity."
+        },
+        "resumeId": {
+          "type": "string",
+          "description": "Reference to the Resume this education entry belongs to. (Relationship: Resume 1:N EducationEntry)"
+        },
+        "degree": {
+          "type": "string",
+          "description": "The degree obtained or pursued (e.g., 'Bachelor of Technology', 'Master of Science')."
+        },
+        "institution": {
+          "type": "string",
+          "description": "The name of the educational institution."
+        },
+        "graduationYear": {
+          "type": "number",
+          "description": "The year of graduation or expected graduation."
+        },
+        "cgpa": {
+          "type": "number",
+          "description": "Cumulative Grade Point Average (CGPA), GPA, or equivalent numerical score."
+        },
+        "relevantCoursework": {
+          "type": "array",
+          "description": "A list of relevant courses or subjects taken, provided as bullet points.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this education entry was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when this education entry was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "resumeId",
+        "degree",
+        "institution",
+        "graduationYear",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Project": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Project",
+      "type": "object",
+      "description": "Represents a project experience listed on a resume. This entity stores details about personal, academic, or professional projects.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Project entity."
+        },
+        "resumeId": {
+          "type": "string",
+          "description": "Reference to the Resume this project belongs to. (Relationship: Resume 1:N Project)"
+        },
+        "title": {
+          "type": "string",
+          "description": "The title or name of the project."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the project, including scope, methodologies, and contributions."
+        },
+        "techStack": {
+          "type": "array",
+          "description": "A list of key technologies, tools, or programming languages used in the project.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "gitHubUrl": {
+          "type": "string",
+          "description": "URL to the project's GitHub repository or other relevant online portfolio/source code.",
+          "format": "uri"
+        },
+        "outcome": {
+          "type": "string",
+          "description": "The measurable outcome, impact, or key achievement of the project."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this project entry was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when this project entry was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "resumeId",
+        "title",
+        "description",
+        "techStack",
+        "outcome",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "InternshipExperience": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "InternshipExperience",
+      "type": "object",
+      "description": "Represents an internship or relevant work experience listed on a resume. Users can add multiple experience entries.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the InternshipExperience entity."
+        },
+        "resumeId": {
+          "type": "string",
+          "description": "Reference to the Resume this experience belongs to. (Relationship: Resume 1:N InternshipExperience)"
+        },
+        "company": {
+          "type": "string",
+          "description": "The name of the company or organization where the experience was gained."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role or position held during the internship or experience."
+        },
+        "duration": {
+          "type": "string",
+          "description": "The duration of the experience, typically as a formatted string (e.g., 'Jan 2023 - Jun 2023' or 'May 2022 - Present')."
+        },
+        "responsibilities": {
+          "type": "array",
+          "description": "A list of key responsibilities, duties, and achievements in bullet points.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this internship experience entry was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when this internship experience entry was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "resumeId",
+        "company",
+        "role",
+        "duration",
+        "responsibilities",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Certification": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Certification",
+      "type": "object",
+      "description": "Represents a professional certification or license obtained by the user, listed on a resume.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Certification entity."
+        },
+        "resumeId": {
+          "type": "string",
+          "description": "Reference to the Resume this certification belongs to. (Relationship: Resume 1:N Certification)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The full name of the certification (e.g., 'AWS Certified Cloud Practitioner')."
+        },
+        "issuer": {
+          "type": "string",
+          "description": "The issuing organization or body for the certification."
+        },
+        "year": {
+          "type": "number",
+          "description": "The year the certification was obtained."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this certification entry was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when this certification entry was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "resumeId",
+        "name",
+        "issuer",
+        "year",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AchievementAward": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AchievementAward",
+      "type": "object",
+      "description": "Represents a notable achievement or award received by the user, listed on a resume.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the AchievementAward entity."
+        },
+        "resumeId": {
+          "type": "string",
+          "description": "Reference to the Resume this achievement/award belongs to. (Relationship: Resume 1:N AchievementAward)"
+        },
+        "description": {
+          "type": "string",
+          "description": "A free-text description of the achievement or award, typically a bullet point."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this achievement/award entry was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when this achievement/award entry was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "resumeId",
+        "description",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Extracurricular": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Extracurricular",
+      "type": "object",
+      "description": "Represents an extracurricular activity, club membership, or volunteering experience listed on a resume.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Extracurricular entity."
+        },
+        "resumeId": {
+          "type": "string",
+          "description": "Reference to the Resume this extracurricular activity belongs to. (Relationship: Resume 1:N Extracurricular)"
+        },
+        "description": {
+          "type": "string",
+          "description": "A free-text description of the extracurricular activity (e.g., 'Member of Robotics Club', 'Volunteer at Local Shelter')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this extracurricular entry was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when this extracurricular entry was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "resumeId",
+        "description",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "LanguageProficiency": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "LanguageProficiency",
+      "type": "object",
+      "description": "Represents a language known by the user and their proficiency level, listed on a resume.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the LanguageProficiency entity."
+        },
+        "resumeId": {
+          "type": "string",
+          "description": "Reference to the Resume this language proficiency belongs to. (Relationship: Resume 1:N LanguageProficiency)"
+        },
+        "language": {
+          "type": "string",
+          "description": "The name of the language (e.g., 'English', 'Spanish', 'Mandarin')."
+        },
+        "proficiencyLevel": {
+          "type": "string",
+          "description": "The proficiency level in the language (e.g., 'Native', 'Fluent', 'Intermediate', 'Basic')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this language proficiency entry was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when this language proficiency entry was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "resumeId",
+        "language",
+        "proficiencyLevel",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores core user profile information. The document ID `{userId}` is the Firebase Authentication UID. This acts as the root for all user-owned data."
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}",
+        "definition": {
+          "entityName": "Resume",
+          "schema": {
+            "$ref": "#/backend/entities/Resume"
+          },
+          "description": "Stores a single resume document, acting as a manifest for its constituent sections. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the User who owns this resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique identifier for this specific resume."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}/personalInformation/main",
+        "definition": {
+          "entityName": "PersonalInformation",
+          "schema": {
+            "$ref": "#/backend/entities/PersonalInformation"
+          },
+          "description": "Stores the personal contact details for a specific resume. This is a singleton sub-document ('main'). Includes denormalized 'userId' and 'resumeId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the User who owns this resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique identifier for the parent Resume."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}/professionalSummary/main",
+        "definition": {
+          "entityName": "ProfessionalSummary",
+          "schema": {
+            "$ref": "#/backend/entities/ProfessionalSummary"
+          },
+          "description": "Stores the professional summary text for a specific resume. This is a singleton sub-document ('main'). Includes denormalized 'userId' and 'resumeId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the User who owns this resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique identifier for the parent Resume."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}/educationEntries/{educationEntryId}",
+        "definition": {
+          "entityName": "EducationEntry",
+          "schema": {
+            "$ref": "#/backend/entities/EducationEntry"
+          },
+          "description": "Stores individual education entries for a specific resume. Includes denormalized 'userId' and 'resumeId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the User who owns this resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique identifier for the parent Resume."
+            },
+            {
+              "name": "educationEntryId",
+              "description": "The unique identifier for this specific education entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}/projects/{projectId}",
+        "definition": {
+          "entityName": "Project",
+          "schema": {
+            "$ref": "#/backend/entities/Project"
+          },
+          "description": "Stores individual project experiences for a specific resume. Includes denormalized 'userId' and 'resumeId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the User who owns this resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique identifier for the parent Resume."
+            },
+            {
+              "name": "projectId",
+              "description": "The unique identifier for this specific project."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}/internshipExperiences/{internshipExperienceId}",
+        "definition": {
+          "entityName": "InternshipExperience",
+          "schema": {
+            "$ref": "#/backend/entities/InternshipExperience"
+          },
+          "description": "Stores individual internship or work experiences for a specific resume. Includes denormalized 'userId' and 'resumeId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the User who owns this resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique identifier for the parent Resume."
+            },
+            {
+              "name": "internshipExperienceId",
+              "description": "The unique identifier for this specific internship experience."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}/certifications/{certificationId}",
+        "definition": {
+          "entityName": "Certification",
+          "schema": {
+            "$ref": "#/backend/entities/Certification"
+          },
+          "description": "Stores individual certification entries for a specific resume. Includes denormalized 'userId' and 'resumeId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the User who owns this resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique identifier for the parent Resume."
+            },
+            {
+              "name": "certificationId",
+              "description": "The unique identifier for this specific certification."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}/achievementAwards/{achievementAwardId}",
+        "definition": {
+          "entityName": "AchievementAward",
+          "schema": {
+            "$ref": "#/backend/entities/AchievementAward"
+          },
+          "description": "Stores individual achievement and award entries for a specific resume. Includes denormalized 'userId' and 'resumeId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the User who owns this resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique identifier for the parent Resume."
+            },
+            {
+              "name": "achievementAwardId",
+              "description": "The unique identifier for this specific achievement/award."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}/extracurriculars/{extracurricularId}",
+        "definition": {
+          "entityName": "Extracurricular",
+          "schema": {
+            "$ref": "#/backend/entities/Extracurricular"
+          },
+          "description": "Stores individual extracurricular activities for a specific resume. Includes denormalized 'userId' and 'resumeId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the User who owns this resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique identifier for the parent Resume."
+            },
+            {
+              "name": "extracurricularId",
+              "description": "The unique identifier for this specific extracurricular activity."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}/languageProficiencies/{languageProficiencyId}",
+        "definition": {
+          "entityName": "LanguageProficiency",
+          "schema": {
+            "$ref": "#/backend/entities/LanguageProficiency"
+          },
+          "description": "Stores individual language proficiency entries for a specific resume. Includes denormalized 'userId' and 'resumeId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the User who owns this resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique identifier for the parent Resume."
+            },
+            {
+              "name": "languageProficiencyId",
+              "description": "The unique identifier for this specific language proficiency entry."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure for the FreshStart Resume Builder platform is designed with a strong emphasis on Authorization Independence, Structural Segregation, and Hierarchical Path-Based Access Modeling. The core principle driving this design is to ensure that security rules are simple, robust, and do not rely on costly and complex `get()` calls.\n\n**Authorization Independence via Denormalization:**\nTo achieve critical authorization independence, the `userId` of the resume owner will be denormalized into every sub-document that logically belongs to a resume. This means that documents within subcollections like `personalInformation`, `educationEntries`, `projects`, etc., will not only contain their respective `resumeId` but also the `userId` of the owner. This allows security rules to directly check `request.auth.uid == resource.data.userId` on the specific document being accessed, eliminating the need to `get()` a parent `Resume` document or traverse up the hierarchy. This significantly simplifies rule writing, improves performance, and enables atomic operations like creating a new resume with its initial personal information in a single batched write, as rules can validate each document independently.\n\n**Structural Segregation & Hierarchical Access Modeling:**\nAll user-specific data, including their resumes and all associated sections, are strictly segregated under a top-level `/users/{userId}` collection. This enforces a homogeneous security posture: only the authenticated user (`request.auth.uid`) can access or modify their own data. Within this, each resume gets its own subcollection: `/users/{userId}/resumes/{resumeId}`. This path directly embeds the `userId`, which means any attempt to query or access data for a different user's path will be immediately denied by security rules (e.g., `match /users/{userId}/{documents=**} { allow read, write: if request.auth.uid == userId; }`).\n\nFor sections that have a 1:1 relationship with a `Resume` (like `PersonalInformation` and `ProfessionalSummary`), they are placed in subcollections with a fixed document ID (e.g., `/personalInformation/main`). This clearly signals that there is only one such document per resume, simplifying client-side data fetching and rule matching. For sections with a 1:N relationship (e.g., `EducationEntry`, `Project`), they reside in their own subcollections (e.g., `/educationEntries/{educationEntryId}`). This structure ensures that listing operations (QAPs) are secure: a user can only list their own `educationEntries` for a specific `resumeId` under their `userId` path, and each document returned will further be validated to contain the correct `userId` and `resumeId` in its data.\n\nThis hierarchical, path-based ownership combined with strategic denormalization directly supports the QAP principle by ensuring that any `list` operation within a user's `resumes` path, or any of its subcollections, will automatically be constrained to the authenticated user's data without requiring complex query filters in security rules."
+  }
+}

@@ -1,0 +1,41 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "landing-hero",
+      "description": "Professional workspace with a laptop and resume builder interface showing high-quality templates",
+      "imageUrl": "https://picsum.photos/seed/resume-landing/1200/800",
+      "imageHint": "professional workspace"
+    },
+    {
+      "id": "students-collaborating",
+      "description": "Diverse group of students talking and collaborating in a modern university setting",
+      "imageUrl": "https://picsum.photos/seed/students-talking/1920/1080",
+      "imageHint": "students collaborating"
+    },
+    {
+      "id": "student-1",
+      "description": "Smiling young Indian professional male with glasses, formal attire",
+      "imageUrl": "https://picsum.photos/seed/indian-man-1/400/400",
+      "imageHint": "indian man"
+    },
+    {
+      "id": "student-2",
+      "description": "Confident young Indian professional female, business casual",
+      "imageUrl": "https://picsum.photos/seed/indian-woman-1/400/400",
+      "imageHint": "indian woman"
+    },
+    {
+      "id": "student-3",
+      "description": "Happy young Indian male professional, natural background",
+      "imageUrl": "https://picsum.photos/seed/indian-man-2/400/400",
+      "imageHint": "indian male"
+    },
+    {
+      "id": "student-4",
+      "description": "Smiling Indian female professional in a modern office",
+      "imageUrl": "https://picsum.photos/seed/indian-woman-2/400/400",
+      "imageHint": "indian female"
+    }
+  ]
+}
