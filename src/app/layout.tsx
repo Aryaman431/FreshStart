@@ -5,6 +5,11 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 export const metadata: Metadata = {
   title: 'FreshStart | AI Resume Builder for Students',
   description: 'Craft a professional resume in minutes with AI-assisted guidance for freshers and final-year students.',
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({
