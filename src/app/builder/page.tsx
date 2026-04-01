@@ -89,10 +89,10 @@ function BuilderContent() {
         </div>
 
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" asChild className="text-white hover:text-white/80 font-bold h-9">
+          <Button variant="default" size="sm" asChild className="bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 transition-all rounded-full px-6 h-9">
             <Link href="/">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Back to Home</span>
+              <span className="inline">Back to Home</span>
             </Link>
           </Button>
           
@@ -102,18 +102,17 @@ function BuilderContent() {
             </div>
           ) : user ? (
             <div className="flex items-center space-x-2">
-              <div className="hidden md:flex flex-col items-end mr-2">
-                <span className="text-[10px] font-bold text-slate-100 uppercase tracking-wider">Logged In as</span>
-                <span className="text-xs font-black text-white">{user.isAnonymous ? 'Guest' : user.email}</span>
+              <div className="flex flex-col items-center text-purple-700 font-bold px-3 py-1 rounded">
+                <span className="text-[10px] uppercase tracking-wider">Logged In as</span>
+                <span className="text-xs">{user.isAnonymous ? 'Guest' : user.email}</span>
               </div>
               <Button 
-                variant="outline" 
+                variant="default" 
                 size="sm" 
                 onClick={handleSignOut}
-                className="text-foreground border-white/40 hover:border-white hover:text-primary font-bold h-9 bg-white/20 text-white"
-              >
+                className="bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 transition-all rounded-full px-6 h-9">
                 <LogOut className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Sign Out</span>
+                <span className="inline">Sign Out</span>
               </Button>
             </div>
           ) : (
