@@ -46,7 +46,7 @@
 /* iPhone-style 3D Translucent Glassmorphism - Intensified Lavender */
 .spatial-card {
   @apply bg-secondary/80 backdrop-blur-3xl border border-white/60 rounded-[2.5rem] transition-all duration-500;
-  box-shadow: 
+  box-shadow:
     0 70px 140px -25px rgba(124, 58, 237, 0.45),
     0 40px 80px -20px rgba(0, 0, 0, 0.25),
     inset 0 0 0 1px rgba(255, 255, 255, 0.4);
@@ -54,14 +54,14 @@
 
 .spatial-card:hover {
   @apply -translate-y-4 border-primary/50 bg-secondary;
-  box-shadow: 
+  box-shadow:
     0 100px 200px -30px rgba(124, 58, 237, 0.6),
     0 50px 100px -25px rgba(0, 0, 0, 0.3),
     inset 0 0 0 1px rgba(255, 255, 255, 0.6);
 }
 
 .posh-gradient-bg {
-  background: 
+  background:
     radial-gradient(circle at 0% 0%, hsla(262, 70%, 90%, 0.5) 0%, transparent 70%),
     radial-gradient(circle at 100% 100%, hsla(262, 70%, 85%, 0.4) 0%, transparent 70%),
     linear-gradient(180deg, hsl(265, 40% , 98%) 0%, hsl(265, 35% , 94%) 100%);
@@ -99,108 +99,6 @@
   transform: translateZ(60px);
 }
 
-/* Print Styles for Resume */
-@page {
-  size: letter;
-  margin-top: 100px;
-  margin-bottom: 100px;
-  margin-left: 0.5in;
-  margin-right: 0.5in;
-}
-
-* {
-  break-inside: auto !important;
-  page-break-inside: auto !important;
-}
-
-section, ul, li, div {
-  break-inside: auto !important;
-  page-break-inside: auto !important;
-}
-
-/* h2, h3 {
-  break-after: avoid;
-  page-break-after: avoid;
-} */
-
-@media print {
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: #fff;
-  }
-
-  #resume-print-target {
-    margin: 0;
-    padding: 0;
-    box-shadow: none;
-    background: #fff;
-    width: 100%;
-    max-width: none;
-    page-break-after: always;
-    overflow: visible;
-  }
-
-  .resume-section {
-    page-break-inside: auto;
-    break-inside: auto;
-    -webkit-column-break-inside: auto;
-    -moz-column-break-inside: auto;
-    margin-bottom: 10pt;
-    padding: 0;
-  }
-
-  .resume-section h2 {
-    page-break-after: avoid;
-    break-after: avoid;
-    orphans: 2;
-    widows: 2;
-    margin-top: 0.18in; /* header gap at the top of the page */
-    margin-bottom: 3pt;
-    padding-top: 0;
-  }
-
-  .resume-section {
-    orphans: 2;
-    widows: 2;
-  }
-
-  .resume-item {
-    page-break-inside: auto;
-    break-inside: auto;
-    -webkit-column-break-inside: auto;
-    -moz-column-break-inside: auto;
-    margin-bottom: 4pt;
-    orphans: 2;
-    widows: 2;
-  }
-
-  header {
-    page-break-after: avoid;
-    margin-bottom: 8pt;
-    orphans: 2;
-    widows: 2;
-  }
-
-  /* Keep content out of footer margin and continue on next page */
-  #resume-print-target, .resume-section, .resume-item {
-    overflow: visible;
-  }
-
-  /* Soft footer guard zone for all pages */
-  .resume-page-inner {
-    padding-bottom: 0.4in;
-    box-sizing: border-box;
-  }
-}
-
-
 @keyframes float-spatial {
   0%, 100% { transform: translateY(0) translateZ(30px); }
   50% { transform: translateY(-12px) translateZ(50px); }
@@ -213,7 +111,10 @@ section, ul, li, div {
 @media print {
   @page {
     size: letter;
-    margin: 0;
+    margin-top: 1in;
+    margin-bottom: 1in;
+    margin-left: 0.75in;
+    margin-right: 0.75in;
   }
 
   html, body {
@@ -230,7 +131,7 @@ section, ul, li, div {
     visibility: hidden;
   }
 
-  .print-container, 
+  .print-container,
   .print-container * {
     visibility: visible;
   }
@@ -255,7 +156,7 @@ section, ul, li, div {
     width: 100% !important;
     max-width: none !important;
     margin: 0 !important;
-    padding: 0.5in 0.75in !important;
+    padding: 0 !important;
     box-shadow: none !important;
     background: white !important;
     display: block !important;
@@ -269,7 +170,7 @@ section, ul, li, div {
     padding: 0 !important;
     visibility: visible !important;
   }
-  
+
   .print-hidden {
     display: none !important;
     visibility: hidden !important;
