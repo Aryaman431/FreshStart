@@ -99,6 +99,108 @@
   transform: translateZ(60px);
 }
 
+/* Print Styles for Resume */
+@page {
+  size: letter;
+  margin-top: 100px;
+  margin-bottom: 100px;
+  margin-left: 0.5in;
+  margin-right: 0.5in;
+}
+
+* {
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+}
+
+section, ul, li, div {
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+}
+
+/* h2, h3 {
+  break-after: avoid;
+  page-break-after: avoid;
+} */
+
+@media print {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+
+  #resume-print-target {
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    background: #fff;
+    width: 100%;
+    max-width: none;
+    page-break-after: always;
+    overflow: visible;
+  }
+
+  .resume-section {
+    page-break-inside: auto;
+    break-inside: auto;
+    -webkit-column-break-inside: auto;
+    -moz-column-break-inside: auto;
+    margin-bottom: 10pt;
+    padding: 0;
+  }
+
+  .resume-section h2 {
+    page-break-after: avoid;
+    break-after: avoid;
+    orphans: 2;
+    widows: 2;
+    margin-top: 0.18in; /* header gap at the top of the page */
+    margin-bottom: 3pt;
+    padding-top: 0;
+  }
+
+  .resume-section {
+    orphans: 2;
+    widows: 2;
+  }
+
+  .resume-item {
+    page-break-inside: auto;
+    break-inside: auto;
+    -webkit-column-break-inside: auto;
+    -moz-column-break-inside: auto;
+    margin-bottom: 4pt;
+    orphans: 2;
+    widows: 2;
+  }
+
+  header {
+    page-break-after: avoid;
+    margin-bottom: 8pt;
+    orphans: 2;
+    widows: 2;
+  }
+
+  /* Keep content out of footer margin and continue on next page */
+  #resume-print-target, .resume-section, .resume-item {
+    overflow: visible;
+  }
+
+  /* Soft footer guard zone for all pages */
+  .resume-page-inner {
+    padding-bottom: 0.4in;
+    box-sizing: border-box;
+  }
+}
+
+
 @keyframes float-spatial {
   0%, 100% { transform: translateY(0) translateZ(30px); }
   50% { transform: translateY(-12px) translateZ(50px); }
