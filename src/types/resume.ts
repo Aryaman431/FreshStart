@@ -1,4 +1,6 @@
 export interface PersonalInfo {
+
+  
   fullName: string;
   email: string;
   phone: string;
@@ -11,7 +13,8 @@ export interface Education {
   id: string;
   degree: string;
   institution: string;
-  year: string;
+  startDate: string;
+  endDate: string;
   coursework: string;
 }
 
@@ -70,11 +73,11 @@ export const initialResumeData: ResumeData = {
     additionalInfo: '',
   },
   professionalSummary: '',
-  education: [],
+  education: [{ id: '1', degree: '', institution: '', startDate: '', endDate: '', coursework: '' }],
   skills: [],
-  projects: [],
-  experience: [],
-  certifications: [],
+  projects: [{ id: '1', title: '', description: '', techStack: '', link: '', date: '' }],
+  experience: [{ id: '1', company: '', role: '', startDate: '', endDate: '', responsibilities: '' }],
+  certifications: [{ id: '1', name: '', issuer: '', year: '' }],
   achievements: '',
   extracurriculars: '',
   languages: [],

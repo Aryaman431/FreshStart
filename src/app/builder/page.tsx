@@ -57,7 +57,7 @@ function BuilderContent() {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-background print:h-auto print:overflow-visible geometric-pattern">
+    <div className="flex flex-col h-screen bg-background print:h-auto print:overflow-visible geometric-pattern">
       {/* Verification Warning Strip */}
       {user && !user.isAnonymous && !user.emailVerified && (
         <div className="bg-amber-100 border-b border-amber-200 px-6 py-2 flex items-center justify-between text-xs font-bold text-amber-800 shrink-0">
@@ -133,7 +133,7 @@ function BuilderContent() {
       </nav>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex overflow-hidden relative print:block print:static print:h-auto print:overflow-visible">
+      <main className="flex-1 flex relative print:block print:static print:h-auto print:overflow-visible">
         {mounted ? (
           <ResizablePanelGroup 
             direction={isMobile ? "vertical" : "horizontal"} 
@@ -145,7 +145,8 @@ function BuilderContent() {
               minSize={isMobile ? 0 : 25} 
               maxSize={isMobile ? 100 : 70}
             >
-              <div className="h-full border-r overflow-hidden flex flex-col bg-slate-50/50">
+              {/* THIS WRAPPER IS THE CULPRIT. `overflow-hidden` IS REMOVED. */}
+              <div className="h-full border-r flex flex-col bg-slate-50/50">
                 <Editor />
               </div>
             </ResizablePanel>
@@ -159,17 +160,18 @@ function BuilderContent() {
               minSize={isMobile ? 0 : 30}
               maxSize={isMobile ? 100 : 75}
             >
-              <div className="overflow-hidden h-full bg-slate-200/30">
+              <div className="overflow-auto h-full bg-slate-200/30">
                 <Preview />
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>
         ) : (
-          <div className="flex-1 grid grid-cols-1 md:grid-cols-[400px_1fr] h-full overflow-hidden print:hidden">
-            <div className="border-r overflow-hidden flex flex-col bg-slate-50/50">
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-[400px_1fr] h-full print:hidden">
+            {/* THIS WRAPPER IS THE CULPRIT. `overflow-hidden` IS REMOVED. */}
+            <div className="border-r flex flex-col bg-slate-50/50">
               <Editor />
             </div>
-            <div className="overflow-hidden h-full bg-slate-200/30">
+            <div className="overflow-auto h-full bg-slate-200/30">
               <Preview />
             </div>
           </div>

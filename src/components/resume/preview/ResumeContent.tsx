@@ -16,7 +16,7 @@ const DUMMY = {
   email: "alex.vanders@ivy.edu",
   phone: "212-555-0198",
   linkedin: "linkedin.com/in/alexvanders",
-  github: "github.com/alexv",
+  // github: "github.com/alexv",
   summary: "Highly ambitious Computer Science scholar with a specialization in systemic architecture and neural computation. Proven record of conceptualizing and deploying high-impact software solutions within agile, research-driven environments. Dedicated to engineering excellence and the synthesis of elegant technological ecosystems.",
   education: [
     { id: 'dummy-edu', degree: 'Bachelor of Science in Computer Science', institution: 'Prestige Institute of Technology', year: 'Aug. 2020 -- May 2024', coursework: '' }
@@ -54,6 +54,45 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
     return link.startsWith('http') ? link : `https://${link}`;
   };
 
+  const renderTextWithLinks = (text: string | undefined) => {
+    if (!isValPresent(text)) return text;
+
+    const parts: (string | JSX.Element)[] = [];
+    const urlRegex = /\b((?:https?:\/\/|www\.)[^\s,()]+)\b/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = urlRegex.exec(text!)) !== null) {
+      // Add text before the link
+      if (match.index > lastIndex) {
+        parts.push(text!.substring(lastIndex, match.index));
+      }
+
+      const url = match[0];
+      // Add the link
+      parts.push(
+        <a
+          key={match.index}
+          href={getLinkUrl(url)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline decoration-slate-300 underline-offset-2 hover:text-primary transition-colors break-all"
+        >
+          {url}
+        </a>
+      );
+      lastIndex = urlRegex.lastIndex;
+    }
+
+    // Add remaining text after the last link
+    if (lastIndex < text!.length) {
+      parts.push(text!.substring(lastIndex));
+    }
+
+    return <>{parts}</>;
+  };
+
+
   const getDisplayArray = (arr: any[], dummy: any[]) => {
     return arr && arr.length > 0 ? { data: arr, isDummy: false } : { data: dummy, isDummy: true };
   };
@@ -72,6 +111,48 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
   const expItems = getDisplayArray(data.experience, DUMMY.experience);
   const projItems = getDisplayArray(data.projects, DUMMY.projects);
   const certItems = getDisplayArray(data.certifications, DUMMY.certifications);
+
+  const personalInfoItems = [
+    {
+      key: 'phone',
+      content: data.personalInfo.phone || DUMMY.phone,
+      render: () => <span className="break-all">{renderText(data.personalInfo.phone, DUMMY.phone)}</span>
+    },
+    {
+      key: 'email',
+      content: data.personalInfo.email || DUMMY.email,
+      render: () => (
+        <a href={`mailto:${data.personalInfo.email || DUMMY.email}`} className="underline decoration-slate-300 underline-offset-2 hover:text-primary transition-colors break-all">
+          {renderText(data.personalInfo.email, DUMMY.email)}
+        </a>
+      )
+    },
+    {
+      key: 'linkedin',
+      content: data.personalInfo.linkedin || DUMMY.linkedin,
+      render: () => (
+        <a href={getLinkUrl(data.personalInfo.linkedin || DUMMY.linkedin)} target="_blank" rel="noopener noreferrer" className="underline decoration-slate-300 underline-offset-2 hover:text-primary transition-colors break-all">
+          {renderText(data.personalInfo.linkedin, DUMMY.linkedin)}
+        </a>
+      )
+    },
+    {
+      key: 'github',
+      content: data.personalInfo.github, // No dummy for github
+      render: () => (
+        <a href={getLinkUrl(data.personalInfo.github)} target="_blank" rel="noopener noreferrer" className="underline decoration-slate-300 underline-offset-2 hover:text-primary transition-colors break-all">
+          {renderText(data.personalInfo.github, '')}
+        </a>
+      )
+    },
+    {
+      key: 'additional',
+      content: data.personalInfo.additionalInfo,
+      render: () => <span className="font-bold text-slate-900 break-words">{renderTextWithLinks(data.personalInfo.additionalInfo)}</span>
+    }
+  ];
+
+  const visibleItems = personalInfoItems.filter(item => isValPresent(item.content));
 
   return (
     <div 
@@ -93,22 +174,15 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         <h1 className="text-2xl mb-1 font-bold tracking-tight">
           {renderText(data.personalInfo.fullName, DUMMY.fullName, "uppercase")}
         </h1>
-        <div className="text-[10pt] flex flex-wrap justify-center items-center gap-x-3 text-slate-700">
-          <span>{renderText(data.personalInfo.phone, DUMMY.phone)}</span> |
-          <a href={`mailto:${data.personalInfo.email || DUMMY.email}`} className="underline decoration-slate-300 underline-offset-2 hover:text-primary transition-colors">
-            {renderText(data.personalInfo.email, DUMMY.email)}
-          </a> |
-          <a href={getLinkUrl(data.personalInfo.linkedin || DUMMY.linkedin)} target="_blank" rel="noopener noreferrer" className="underline decoration-slate-300 underline-offset-2 hover:text-primary transition-colors">
-            {renderText(data.personalInfo.linkedin, DUMMY.linkedin)}
-          </a> |
-          <a href={getLinkUrl(data.personalInfo.github || DUMMY.github)} target="_blank" rel="noopener noreferrer" className="underline decoration-slate-300 underline-offset-2 hover:text-primary transition-colors">
-            {renderText(data.personalInfo.github, DUMMY.github)}
-          </a>
-          {isValPresent(data.personalInfo.additionalInfo) && (
-            <>
-              | {renderText(data.personalInfo.additionalInfo, "", "font-bold text-slate-900")}
-            </>
-          )}
+        <div className="text-[10pt] flex flex-wrap justify-center items-center text-slate-700">
+          {visibleItems.map((item, index) => (
+            <React.Fragment key={item.key}>
+              {item.render()}
+              {index < visibleItems.length - 1 && (
+                <span className="text-slate-400 select-none mx-2 print:mx-1.5" aria-hidden="true">|</span>
+              )}
+            </React.Fragment>
+          ))}
         </div>
       </header>
 
