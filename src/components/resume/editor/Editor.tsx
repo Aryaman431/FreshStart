@@ -1,12 +1,13 @@
 "use client";
 
+
 import React, { useEffect, useRef } from 'react';
 import { Accordion } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { User, FileText, GraduationCap, Code, Briefcase, Award, Plus, Trash2, ListChecks, Star, RefreshCcw, Info } from 'lucide-react';
+import { User, FileText, GraduationCap, Code, Briefcase, Award, Plus, Trash2, ListChecks, Star, RefreshCcw } from 'lucide-react';
 import { useResume } from '@/app/lib/resume-store';
 import { SectionCard } from './SectionCard';
 import { AIReview } from '../AIReview';
@@ -17,20 +18,15 @@ export function Editor() {
   const { data, updateData, resetData, setActiveSection, activeSection } = useResume();
   const editorRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // A dedicated state to reliably trigger the scroll effect, even if the activeSection is the same.
   const [scrollTrigger, setScrollTrigger] = React.useState(0);
 
-  // This is now the single point of control for focusing a section and ensuring it scrolls into view.
   const focusAndScroll = (sectionId: string | undefined) => {
-    if (!sectionId) return; // Accordion may pass undefined when collapsing.
+    if (!sectionId) return;
     setActiveSection(sectionId);
-    setScrollTrigger(prev => prev + 1); // Incrementing the trigger guarantees the useEffect will run.
+    setScrollTrigger(prev => prev + 1);
   };
 
   useEffect(() => {
-    // This effect is now driven by the scrollTrigger, not just the activeSection.
-    // This solves the core bug where interacting with an already-active section did nothing.
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
@@ -51,7 +47,7 @@ export function Editor() {
             top: top,
             behavior: 'smooth'
           });
-        }, 300);
+        }, 100);
       }
     }
     
@@ -60,7 +56,7 @@ export function Editor() {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, [scrollTrigger]); // The dependency array is the key to this fix.
+  }, [scrollTrigger]);
 
   const handlePersonalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -208,18 +204,14 @@ export function Editor() {
                   placeholder="linkedin.com/in/johndoe"
                 />
               </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label className="flex items-center text-primary font-bold">
-                  Additional Desired Info
-                  <Info className="ml-2 h-3 w-3" />
-                </Label>
+              <div className="space-y-2">
+                <Label>Additional Desired Info</Label>
                 <Input
-                  name="additionalInfo"
-                  value={data.personalInfo.additionalInfo || ''}
+                  name="github"
+                  value={data.personalInfo.github}
                   onChange={handlePersonalChange}
                   onFocus={() => focusAndScroll('personal')}
-                  placeholder="e.g. Portfolio: myportfolio.com, GitHub: github.com/johndoe"
+                  placeholder="Eg. github.com"
                 />
               </div>
             </div>

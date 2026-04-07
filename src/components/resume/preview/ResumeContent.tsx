@@ -1,5 +1,6 @@
 "use client";
 
+
 import React from 'react';
 import { ResumeData } from '@/types/resume';
 import { cn } from '@/lib/utils';
@@ -16,7 +17,7 @@ const DUMMY = {
   email: "alex.vanders@ivy.edu",
   phone: "212-555-0198",
   linkedin: "linkedin.com/in/alexvanders",
-  // github: "github.com/alexv",
+  github: "github.com/alexv",
   summary: "Highly ambitious Computer Science scholar with a specialization in systemic architecture and neural computation. Proven record of conceptualizing and deploying high-impact software solutions within agile, research-driven environments. Dedicated to engineering excellence and the synthesis of elegant technological ecosystems.",
   education: [
     { id: 'dummy-edu', degree: 'Bachelor of Science in Computer Science', institution: 'Prestige Institute of Technology', year: 'Aug. 2020 -- May 2024', coursework: '' }
@@ -39,12 +40,17 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
 
   const renderText = (userVal: string | undefined, dummyVal: string, baseClasses: string = "") => {
     const isPresent = isValPresent(userVal);
+    const displayValue = isPresent ? userVal : (isPrint ? dummyVal : dummyVal);
+    const effectiveVal = isPresent ? userVal : dummyVal;
+
+    if (!isPresent && !isPrint && !dummyVal) return null;
+    
     return (
       <span className={cn(
         baseClasses,
         isPresent ? "text-slate-900 font-bold" : (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal")
       )}>
-        {isPresent ? userVal : dummyVal}
+        {effectiveVal}
       </span>
     );
   };
@@ -54,22 +60,20 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
     return link.startsWith('http') ? link : `https://${link}`;
   };
 
-  const renderTextWithLinks = (text: string | undefined) => {
-    if (!isValPresent(text)) return text;
+  const renderTextWithLinks = (text: string | undefined, isDummy: boolean = false) => {
+    const effectiveText = isValPresent(text) ? text : (isPrint || isDummy ? text : DUMMY.summary); // Fallback logic
+    if (!effectiveText) return null;
 
+    const urlRegex = /((?:https?:\/\/|www\.)[^\s<>()]+)/g;
     const parts: (string | JSX.Element)[] = [];
-    const urlRegex = /\b((?:https?:\/\/|www\.)[^\s,()]+)\b/g;
     let lastIndex = 0;
     let match;
 
-    while ((match = urlRegex.exec(text!)) !== null) {
-      // Add text before the link
+    while ((match = urlRegex.exec(effectiveText)) !== null) {
       if (match.index > lastIndex) {
-        parts.push(text!.substring(lastIndex, match.index));
+        parts.push(effectiveText.substring(lastIndex, match.index));
       }
-
       const url = match[0];
-      // Add the link
       parts.push(
         <a
           key={match.index}
@@ -84,14 +88,12 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
       lastIndex = urlRegex.lastIndex;
     }
 
-    // Add remaining text after the last link
-    if (lastIndex < text!.length) {
-      parts.push(text!.substring(lastIndex));
+    if (lastIndex < effectiveText.length) {
+      parts.push(effectiveText.substring(lastIndex));
     }
 
-    return <>{parts}</>;
+    return <>{parts.map((part, i) => <React.Fragment key={i}>{part}</React.Fragment>)}</>;
   };
-
 
   const getDisplayArray = (arr: any[], dummy: any[]) => {
     return arr && arr.length > 0 ? { data: arr, isDummy: false } : { data: dummy, isDummy: true };
@@ -100,10 +102,8 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
   const formatDuration = (start: string | undefined, end: string | undefined, dummyStart: string, dummyEnd: string) => {
     const isStartPresent = isValPresent(start);
     const isEndPresent = isValPresent(end);
-    
     const startDisplay = isStartPresent ? start : dummyStart;
     const endDisplay = isEndPresent ? end : dummyEnd;
-    
     return `${startDisplay} -- ${endDisplay}`;
   };
 
@@ -113,43 +113,10 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
   const certItems = getDisplayArray(data.certifications, DUMMY.certifications);
 
   const personalInfoItems = [
-    {
-      key: 'phone',
-      content: data.personalInfo.phone || DUMMY.phone,
-      render: () => <span className="break-all">{renderText(data.personalInfo.phone, DUMMY.phone)}</span>
-    },
-    {
-      key: 'email',
-      content: data.personalInfo.email || DUMMY.email,
-      render: () => (
-        <a href={`mailto:${data.personalInfo.email || DUMMY.email}`} className="underline decoration-slate-300 underline-offset-2 hover:text-primary transition-colors break-all">
-          {renderText(data.personalInfo.email, DUMMY.email)}
-        </a>
-      )
-    },
-    {
-      key: 'linkedin',
-      content: data.personalInfo.linkedin || DUMMY.linkedin,
-      render: () => (
-        <a href={getLinkUrl(data.personalInfo.linkedin || DUMMY.linkedin)} target="_blank" rel="noopener noreferrer" className="underline decoration-slate-300 underline-offset-2 hover:text-primary transition-colors break-all">
-          {renderText(data.personalInfo.linkedin, DUMMY.linkedin)}
-        </a>
-      )
-    },
-    {
-      key: 'github',
-      content: data.personalInfo.github, // No dummy for github
-      render: () => (
-        <a href={getLinkUrl(data.personalInfo.github)} target="_blank" rel="noopener noreferrer" className="underline decoration-slate-300 underline-offset-2 hover:text-primary transition-colors break-all">
-          {renderText(data.personalInfo.github, '')}
-        </a>
-      )
-    },
-    {
-      key: 'additional',
-      content: data.personalInfo.additionalInfo,
-      render: () => <span className="font-bold text-slate-900 break-words">{renderTextWithLinks(data.personalInfo.additionalInfo)}</span>
-    }
+    { key: 'phone', content: data.personalInfo.phone, dummy: DUMMY.phone },
+    { key: 'email', content: data.personalInfo.email, dummy: DUMMY.email, isEmail: true },
+    { key: 'linkedin', content: data.personalInfo.linkedin, dummy: DUMMY.linkedin, isLink: true },
+    { key: 'github', content: data.personalInfo.github, dummy: DUMMY.github, isLink: true },
   ];
 
   const visibleItems = personalInfoItems.filter(item => isValPresent(item.content));
@@ -169,102 +136,84 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         margin: isPrint ? 0 : undefined
       }}
     >
-      {/* Header / Personal Info */}
       <header id="preview-section-personal" className={cn("resume-section text-center mb-4 sm:mb-8 transition-all p-3 rounded-xl print:p-0 print:mb-3", activeSection === 'personal' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h1 className="text-2xl mb-1 font-bold tracking-tight">
+        <h1 className="text-2xl mb-1 font-bold tracking-tight uppercase">
           {renderText(data.personalInfo.fullName, DUMMY.fullName, "uppercase")}
         </h1>
-        <div className="text-[10pt] flex flex-wrap justify-center items-center text-slate-700">
+        <div className="text-[10pt] flex flex-wrap justify-center items-center text-slate-700 [word-wrap:break-word]">
           {visibleItems.map((item, index) => (
             <React.Fragment key={item.key}>
-              {item.render()}
+              <span className={cn("font-bold", !isValPresent(item.content) && !isPrint ? "text-slate-300 italic" : "text-slate-900")}>
+                {item.isLink ? (
+                  <a href={getLinkUrl(item.content)} target="_blank" rel="noopener noreferrer" className="underline decoration-slate-300 underline-offset-2 hover:text-primary transition-colors break-all">
+                    {item.content}
+                  </a>
+                ) : item.isEmail ? (
+                  <a href={`mailto:${item.content}`} className="underline decoration-slate-300 underline-offset-2 hover:text-primary transition-colors break-all">
+                    {item.content}
+                  </a>
+                ) : (
+                  <span className="break-all">{item.content}</span>
+                )}
+              </span>
               {index < visibleItems.length - 1 && (
                 <span className="text-slate-400 select-none mx-2 print:mx-1.5" aria-hidden="true">|</span>
               )}
             </React.Fragment>
           ))}
+          {visibleItems.length === 0 && !isPrint && (
+            <span className="text-slate-300 italic font-normal">
+              {DUMMY.phone} | {DUMMY.email} | {DUMMY.linkedin} 
+            </span>
+          )}
         </div>
       </header>
 
-      {/* Professional Summary */}
       <section id="preview-section-summary" className={cn("resume-section mb-4 sm:mb-8 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'summary' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
         <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-1 mb-3">Professional Summary</h2>
         <div className={cn(
-          "text-[11pt] leading-tight whitespace-pre-wrap",
+          "text-[11pt] leading-tight whitespace-pre-wrap break-words",
           !isValPresent(data.professionalSummary) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "text-slate-800 font-normal"
         )}>
-          {data.professionalSummary || DUMMY.summary}
+          {renderTextWithLinks(data.professionalSummary, !isValPresent(data.professionalSummary))}
         </div>
       </section>
 
-      {/* Education */}
       <section id="preview-section-education" className={cn("resume-section mb-4 sm:mb-8 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'education' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
         <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-1 mb-3">Education</h2>
         {eduItems.data.map((edu: any) => (
           <div key={edu.id} className="mb-4 resume-item">
             <div className="flex justify-between text-[11pt]">
-              <span className={cn(
-                "font-bold",
-                (eduItems.isDummy || !isValPresent(edu.institution)) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "text-slate-900"
-              )}>
-                {edu.institution || DUMMY.education[0].institution}
-              </span>
-              <span className={cn(
-                "font-bold",
-                (eduItems.isDummy || !isValPresent(edu.year)) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "text-slate-900"
-              )}>
-                {edu.year || DUMMY.education[0].year}
-              </span>
+              {renderText(edu.institution, DUMMY.education[0].institution, "font-bold")}
+              {renderText(edu.year, DUMMY.education[0].year, "font-bold")}
             </div>
             <div className="italic text-[11pt] text-slate-700">
-              <span className={cn(
-                (eduItems.isDummy || !isValPresent(edu.degree)) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 font-normal") : "text-slate-800 font-normal"
-              )}>
-                {edu.degree || DUMMY.education[0].degree}
-              </span>
+              {renderText(edu.degree, DUMMY.education[0].degree, "font-normal")}
             </div>
           </div>
         ))}
       </section>
 
-      {/* Experience */}
       <section id="preview-section-experience" className={cn("resume-section mb-4 sm:mb-8 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'experience' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
         <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-1 mb-3">Experiences</h2>
         {expItems.data.map((exp: any) => (
           <div key={exp.id} className="mb-5 text-[11pt] resume-item">
             <div className="flex justify-between">
-              <span className={cn(
-                "font-bold",
-                (expItems.isDummy || !isValPresent(exp.role)) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "text-slate-900"
-              )}>
-                {exp.role || DUMMY.experience[0].role}
-              </span>
-              <span className={cn(
-                "font-bold",
-                (expItems.isDummy || (!isValPresent(exp.startDate) && !isValPresent(exp.endDate))) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "text-slate-900"
-              )}>
+              {renderText(exp.role, DUMMY.experience[0].role, "font-bold")}
+              <span className={cn("font-bold", expItems.isDummy ? (isPrint ? "text-slate-400" : "text-slate-300 italic") : "text-slate-900")}>
                 {formatDuration(exp.startDate, exp.endDate, DUMMY.experience[0].startDate, DUMMY.experience[0].endDate)}
               </span>
             </div>
             <div className="italic mb-2 text-slate-700">
-              <span className={cn(
-                "font-bold",
-                (expItems.isDummy || !isValPresent(exp.company)) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "text-slate-800"
-              )}>
-                {exp.company || DUMMY.experience[0].company}
-              </span>
+              {renderText(exp.company, DUMMY.experience[0].company, "font-bold")}
             </div>
-            <div className={cn(
-              "whitespace-pre-wrap pl-3 border-l-2 border-slate-100",
-              (expItems.isDummy || !isValPresent(exp.responsibilities)) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "text-slate-800 font-normal"
-            )}>
-              {exp.responsibilities || DUMMY.experience[0].responsibilities}
+            <div className={cn("whitespace-pre-wrap pl-3 border-l-2 border-slate-100 break-words", expItems.isDummy ? (isPrint ? "text-slate-400" : "text-slate-300 italic") : "text-slate-800")}>
+              {renderTextWithLinks(exp.responsibilities, expItems.isDummy)}
             </div>
           </div>
         ))}
       </section>
 
-      {/* Projects */}
       <section id="preview-section-projects" className={cn("resume-section mb-4 sm:mb-8 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'projects' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
         <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-1 mb-3">Projects</h2>
         {projItems.data.map((proj: any) => (
@@ -272,45 +221,26 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
             <div className="flex justify-between items-start">
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className={cn(
-                    "font-bold",
-                    (projItems.isDummy || !isValPresent(proj.title)) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "text-slate-900"
-                  )}>
-                    {proj.title || DUMMY.projects[0].title}
-                  </span>
+                  {renderText(proj.title, DUMMY.projects[0].title, "font-bold")}
                   <span className="text-slate-300">|</span>
-                  <span className={cn(
-                    "italic",
-                    (projItems.isDummy || !isValPresent(proj.techStack)) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 font-normal") : "text-slate-700 font-normal"
-                  )}>
-                    {proj.techStack || DUMMY.projects[0].techStack}
-                  </span>
+                  {renderText(proj.techStack, DUMMY.projects[0].techStack, "italic")}
                 </div>
                 {isValPresent(proj.link) && (
-                  <a href={getLinkUrl(proj.link)} target="_blank" rel="noopener noreferrer" className="text-[9pt] text-primary flex items-center hover:underline mt-0.5 print:no-underline print:text-slate-800">
+                  <a href={getLinkUrl(proj.link)} target="_blank" rel="noopener noreferrer" className="text-[9pt] text-primary flex items-center hover:underline mt-0.5 print:no-underline print:text-slate-800 break-all">
                     <ExternalLink className="h-2.5 w-2.5 mr-1" />
                     {proj.link}
                   </a>
                 )}
               </div>
-              <span className={cn(
-                "font-bold",
-                (projItems.isDummy || !isValPresent(proj.date)) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "text-slate-900"
-              )}>
-                {proj.date || DUMMY.projects[0].date}
-              </span>
+              {renderText(proj.date, DUMMY.projects[0].date, "font-bold")}
             </div>
-            <div className={cn(
-              "whitespace-pre-wrap pl-3 border-l-2 border-slate-100 mt-1",
-              (projItems.isDummy || !isValPresent(proj.description)) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "text-slate-800 font-normal"
-            )}>
-              {proj.description || DUMMY.projects[0].description}
+            <div className={cn("whitespace-pre-wrap pl-3 border-l-2 border-slate-100 mt-1 break-words", projItems.isDummy ? (isPrint ? "text-slate-400" : "text-slate-300 italic") : "text-slate-800")}>
+              {renderTextWithLinks(proj.description, projItems.isDummy)}
             </div>
           </div>
         ))}
       </section>
 
-      {/* Technical Skills */}
       <section id="preview-section-skills" className={cn("resume-section mb-4 sm:mb-8 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'skills' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
         <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-1 mb-3">Skills</h2>
         <div className="text-[11pt]">
@@ -323,40 +253,25 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         </div>
       </section>
 
-      {/* Certifications */}
       <section id="preview-section-certifications" className={cn("resume-section mb-4 sm:mb-8 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'certifications' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
         <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-1 mb-3">Professional Certifications</h2>
         {certItems.data.map((cert: any) => (
           <div key={cert.id} className="mb-3 text-[11pt] resume-item">
             <div className="flex justify-between">
-              <span className={cn(
-                "font-bold",
-                (certItems.isDummy || !isValPresent(cert.name)) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "text-slate-900"
-              )}>
-                {cert.name || DUMMY.certifications[0].name}
-              </span>
-              <span className={cn(
-                "font-bold",
-                (certItems.isDummy || !isValPresent(cert.year)) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "text-slate-900"
-              )}>
-                {cert.year || DUMMY.certifications[0].year}
-              </span>
+              {renderText(cert.name, DUMMY.certifications[0].name, "font-bold")}
+              {renderText(cert.year, DUMMY.certifications[0].year, "font-bold")}
             </div>
-            <div className="italic text-slate-700">
-              {cert.issuer || DUMMY.certifications[0].issuer}
+            <div className={cn("italic text-slate-700", certItems.isDummy ? (isPrint ? "text-slate-400" : "text-slate-300") : "text-slate-800")}>
+              {renderTextWithLinks(cert.issuer, certItems.isDummy)}
             </div>
           </div>
         ))}
       </section>
 
-      {/* Achievements */}
       <section id="preview-section-achievements" className={cn("resume-section transition-all p-3 rounded-xl print:p-0 print:mb-0", activeSection === 'achievements' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
         <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-1 mb-3">Achievements & Awards</h2>
-        <div className={cn(
-          "text-[11pt] whitespace-pre-wrap pl-3 border-l-2 border-slate-100",
-          !isValPresent(data.achievements) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "text-slate-800 font-normal"
-        )}>
-          {data.achievements || DUMMY.achievements}
+        <div className={cn("text-[11pt] whitespace-pre-wrap pl-3 border-l-2 border-slate-100 break-words", !isValPresent(data.achievements) ? (isPrint ? "text-slate-400" : "text-slate-300 italic") : "text-slate-800")}>
+          {renderTextWithLinks(data.achievements, !isValPresent(data.achievements))}
         </div>
       </section>
     </div>
