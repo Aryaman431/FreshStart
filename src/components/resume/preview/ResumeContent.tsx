@@ -136,7 +136,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         margin: isPrint ? 0 : undefined
       }}
     >
-      <header id="preview-section-personal" className={cn("resume-section text-center mb-4 sm:mb-8 transition-all p-3 rounded-xl print:p-0 print:mb-3", activeSection === 'personal' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
+      <header id="preview-section-personal" className={cn("resume-section text-center mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-3", activeSection === 'personal' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
         <h1 className="text-2xl mb-1 font-bold tracking-tight uppercase">
           {renderText(data.personalInfo.fullName, DUMMY.fullName, "uppercase")}
         </h1>
@@ -169,8 +169,8 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         </div>
       </header>
 
-      <section id="preview-section-summary" className={cn("resume-section mb-4 sm:mb-8 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'summary' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-1 mb-3">Professional Summary</h2>
+      <section id="preview-section-summary" className={cn("resume-section mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'summary' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
+        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Professional Summary</h2>
         <div className={cn(
           "text-[11pt] leading-tight whitespace-pre-wrap break-words",
           !isValPresent(data.professionalSummary) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "text-slate-800 font-normal"
@@ -179,8 +179,8 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         </div>
       </section>
 
-      <section id="preview-section-education" className={cn("resume-section mb-4 sm:mb-8 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'education' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-1 mb-3">Education</h2>
+      <section id="preview-section-education" className={cn("resume-section mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'education' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
+        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Education</h2>
         {eduItems.data.map((edu: any) => (
           <div key={edu.id} className="mb-4 resume-item">
             <div className="flex justify-between text-[11pt]">
@@ -194,8 +194,8 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         ))}
       </section>
 
-      <section id="preview-section-experience" className={cn("resume-section mb-4 sm:mb-8 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'experience' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-1 mb-3">Experiences</h2>
+      <section id="preview-section-experience" className={cn("resume-section mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'experience' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
+        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Experiences</h2>
         {expItems.data.map((exp: any) => (
           <div key={exp.id} className="mb-5 text-[11pt] resume-item">
             <div className="flex justify-between">
@@ -214,8 +214,8 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         ))}
       </section>
 
-      <section id="preview-section-projects" className={cn("resume-section mb-4 sm:mb-8 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'projects' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-1 mb-3">Projects</h2>
+      <section id="preview-section-projects" className={cn("resume-section mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'projects' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
+        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Projects</h2>
         {projItems.data.map((proj: any) => (
           <div key={proj.id} className="mb-5 text-[11pt] resume-item">
             <div className="flex justify-between items-start">
@@ -241,8 +241,8 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         ))}
       </section>
 
-      <section id="preview-section-skills" className={cn("resume-section mb-4 sm:mb-8 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'skills' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-1 mb-3">Skills</h2>
+      <section id="preview-section-skills" className={cn("resume-section mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'skills' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
+        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Skills</h2>
         <div className="text-[11pt]">
           <span className={cn("font-bold text-slate-900", data.skills.length === 0 ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "")}>Technology Stack: </span>
           {data.skills.length > 0 ? (
@@ -253,8 +253,8 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         </div>
       </section>
 
-      <section id="preview-section-certifications" className={cn("resume-section mb-4 sm:mb-8 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'certifications' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-1 mb-3">Professional Certifications</h2>
+      <section id="preview-section-certifications" className={cn("resume-section mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'certifications' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
+        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Professional Certifications</h2>
         {certItems.data.map((cert: any) => (
           <div key={cert.id} className="mb-3 text-[11pt] resume-item">
             <div className="flex justify-between">
@@ -269,7 +269,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
       </section>
 
       <section id="preview-section-achievements" className={cn("resume-section transition-all p-3 rounded-xl print:p-0 print:mb-0", activeSection === 'achievements' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-1 mb-3">Achievements & Awards</h2>
+        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Achievements & Awards</h2>
         <div className={cn("text-[11pt] whitespace-pre-wrap pl-3 border-l-2 border-slate-100 break-words", !isValPresent(data.achievements) ? (isPrint ? "text-slate-400" : "text-slate-300 italic") : "text-slate-800")}>
           {renderTextWithLinks(data.achievements, !isValPresent(data.achievements))}
         </div>
