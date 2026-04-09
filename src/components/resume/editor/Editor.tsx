@@ -154,7 +154,7 @@ export function Editor() {
       </div>
 
       <div ref={editorRef} className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
-        <Accordion type="single" collapsible className="w-full" value={activeSection} onValueChange={focusAndScroll}>
+        <Accordion type="single" collapsible className="w-full" value={activeSection ?? undefined} onValueChange={(val) => focusAndScroll(val)}>
           <SectionCard id="personal" title="Personal Information" icon={<User className="h-4 w-4" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">

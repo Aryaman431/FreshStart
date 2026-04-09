@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   FileUser, 
   Sparkles, 
@@ -33,7 +34,26 @@ const JOBS = [
     location: "San Francisco, CA (Remote)",
     type: "Internship",
     salary: "$45 - $60 /hr",
-    tags: ["React", "TypeScript", "Node.js"]
+    tags: ["React", "TypeScript", "Node.js"],
+    description: `We're looking for a passionate Software Engineering Intern to join our core platform team at Nexus Systems.
+
+Responsibilities:
+• Build and maintain scalable web features using React and TypeScript
+• Collaborate with senior engineers on system design and code reviews
+• Write clean, tested, and well-documented code
+• Participate in agile sprints and daily standups
+
+Requirements:
+• Pursuing a B.S. in Computer Science or related field
+• Proficiency in JavaScript/TypeScript and React
+• Familiarity with REST APIs and Git workflows
+• Strong problem-solving skills and eagerness to learn
+
+Perks:
+• $45–$60/hr compensation
+• Fully remote with flexible hours
+• Mentorship from senior engineers at a Series B startup
+• Full-time offer potential upon graduation`
   },
   {
     id: 2,
@@ -42,7 +62,26 @@ const JOBS = [
     location: "New York, NY",
     type: "Full-time",
     salary: "$85k - $110k",
-    tags: ["Figma", "UI/UX", "Prototyping"]
+    tags: ["Figma", "UI/UX", "Prototyping"],
+    description: `Aura Creative is hiring a Product Design Associate to shape the visual and interaction language of our flagship SaaS product.
+
+Responsibilities:
+• Own end-to-end design for key product features from wireframe to high-fidelity
+• Conduct user research and usability testing to inform design decisions
+• Collaborate closely with product managers and engineers
+• Maintain and evolve our design system in Figma
+
+Requirements:
+• 0–2 years of product or UX design experience
+• Strong portfolio demonstrating UI/UX craft
+• Expert-level Figma skills including components and auto-layout
+• Understanding of accessibility standards (WCAG)
+
+Perks:
+• $85k–$110k base salary + equity
+• Health, dental, and vision coverage
+• Annual design conference budget
+• Hybrid work — 3 days in NYC office`
   },
   {
     id: 3,
@@ -51,12 +90,32 @@ const JOBS = [
     location: "Austin, TX (Hybrid)",
     type: "Full-time",
     salary: "$70k - $95k",
-    tags: ["Python", "SQL", "Tableau"]
+    tags: ["Python", "SQL", "Tableau"],
+    description: `Stellar Insights is seeking a Junior Data Analyst to help turn complex datasets into actionable business intelligence.
+
+Responsibilities:
+• Write and optimize SQL queries to extract and transform data
+• Build dashboards and reports in Tableau for stakeholders
+• Perform exploratory data analysis using Python (pandas, numpy)
+• Identify trends and present findings to non-technical audiences
+
+Requirements:
+• Degree in Data Science, Statistics, CS, or related field
+• Proficiency in SQL and Python for data analysis
+• Experience with Tableau or similar BI tools
+• Strong attention to detail and communication skills
+
+Perks:
+• $70k–$95k salary based on experience
+• Hybrid schedule — 2 days in Austin office
+• 401(k) with company match
+• Clear growth path to Senior Analyst within 18 months`
   }
 ];
 
 export default function LandingPage() {
   const [text, setText] = useState('');
+  const [selectedJob, setSelectedJob] = useState<typeof JOBS[0] | null>(null);
   const staticPart = "Level Up Your ";
   const dynamicPart = "Resume in < 1 Min.";
   
@@ -318,7 +377,7 @@ export default function LandingPage() {
                     ))}
                   </div>
 
-                  <Button className="w-full h-16 rounded-3xl font-bold bg-foreground hover:bg-foreground/90 text-white mt-8 group-hover:bg-primary transition-all shadow-xl">
+                  <Button className="w-full h-16 rounded-3xl font-bold bg-foreground hover:bg-foreground/90 text-white mt-8 group-hover:bg-primary transition-all shadow-xl" onClick={() => setSelectedJob(job)}>
                     View Position
                   </Button>
                 </div>
@@ -327,6 +386,38 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Job Description Modal */}
+      <Dialog open={!!selectedJob} onOpenChange={(open) => !open && setSelectedJob(null)}>
+        <DialogContent className="sm:max-w-[560px] rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl">
+          {selectedJob && (
+            <>
+              <div className="bg-primary p-8 text-white space-y-2">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-black uppercase tracking-tight text-white">{selectedJob.role}</DialogTitle>
+                </DialogHeader>
+                <p className="text-white/80 font-bold text-sm uppercase tracking-widest">{selectedJob.company}</p>
+                <div className="flex flex-wrap gap-4 pt-2 text-white/70 text-sm font-medium">
+                  <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{selectedJob.location}</span>
+                  <span className="flex items-center gap-1"><Clock className="h-4 w-4" />{selectedJob.type}</span>
+                  <span className="flex items-center gap-1"><Award className="h-4 w-4" />{selectedJob.salary}</span>
+                </div>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {selectedJob.tags.map(tag => (
+                    <Badge key={tag} className="bg-white/20 text-white border-white/30 text-xs font-bold">{tag}</Badge>
+                  ))}
+                </div>
+              </div>
+              <div className="p-8 space-y-6 bg-white max-h-[50vh] overflow-y-auto">
+                <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-line font-medium">{selectedJob.description}</p>
+                <Button className="w-full h-12 rounded-xl font-bold bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20" asChild>
+                  <Link href="/builder">Apply with FreshStart <ChevronRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Footer */}
       <footer className="bg-foreground text-white pt-32 pb-16">

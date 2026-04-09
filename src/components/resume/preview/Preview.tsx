@@ -18,36 +18,24 @@ export function Preview() {
   const handleDownloadPDF = async () => {
     setIsDownloading(true);
     try {
-      const resumeElement = document.getElementById('resume-print-target');
-      if (!resumeElement) {
-        console.error("Resume element not found for printing.");
-        setIsDownloading(false);
-        return;
-      }
-
-      // Temporarily create a hidden element for printing to ensure full content capture
       const printContainer = document.createElement('div');
       printContainer.style.position = 'absolute';
       printContainer.style.left = '-9999px';
       printContainer.style.top = '0';
-      printContainer.style.width = '8.5in'; // Standard US Letter width
+      printContainer.style.width = '8.5in';
       document.body.appendChild(printContainer);
 
-      // Render the ResumeContent for printing inside the hidden container
       const tempRoot = document.createElement('div');
       printContainer.appendChild(tempRoot);
-      
-      // A way to render React component to a DOM element
-      const React = await import('react');
+
       const ReactDOM = await import('react-dom/client');
       const root = ReactDOM.createRoot(tempRoot);
       root.render(<ResumeContent data={data} isPrint={true} />);
-      
-      // Allow time for images and styles to load
+
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const canvas = await html2canvas(printContainer.children[0] as HTMLElement, {
-        scale: 3, // Higher scale for better quality
+        scale: 3,
         useCORS: true,
         logging: false,
       });
@@ -59,19 +47,31 @@ export function Preview() {
         format: 'letter'
       });
 
-      const pdfWidth = 8.5;
-      const pdfHeight = 11;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.addImage(imgData, 'PNG', 0, 0, 8.5, 11);
+
+      // Add clickable link annotations over the image
+      const renderedEl = printContainer.children[0] as HTMLElement;
+      const containerRect = renderedEl.getBoundingClientRect();
+      const scaleX = 8.5 / renderedEl.offsetWidth;
+      const scaleY = 11 / renderedEl.offsetHeight;
+
+      const anchors = renderedEl.querySelectorAll<HTMLAnchorElement>('a[href]');
+      anchors.forEach((anchor) => {
+        const href = anchor.getAttribute('href');
+        if (!href || href === '#') return;
+        const rect = anchor.getBoundingClientRect();
+        const x = (rect.left - containerRect.left) * scaleX;
+        const y = (rect.top - containerRect.top) * scaleY;
+        const w = rect.width * scaleX;
+        const h = rect.height * scaleY;
+        pdf.link(x, y, w, h, { url: href });
+      });
 
       const fullName = data.personalInfo.fullName.trim() || 'resume';
-      const filename = `${fullName.replace(/\s+/g, '-')}-Resume.pdf`;
+      pdf.save(`${fullName.replace(/\s+/g, '-')}-Resume.pdf`);
 
-      pdf.save(filename);
-
-      // Cleanup
       root.unmount();
       document.body.removeChild(printContainer);
-
     } catch (error) {
       console.error("Error generating PDF:", error);
     } finally {
@@ -93,9 +93,9 @@ export function Preview() {
           </Button>
         </div>
 
-        <Button 
-          variant="default" 
-          size="sm" 
+        <Button
+          variant="default"
+          size="sm"
           onClick={handleDownloadPDF}
           disabled={isDownloading}
           className="bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 transition-all rounded-full px-6 w-48"
@@ -115,14 +115,14 @@ export function Preview() {
       </div>
 
       {/* Preview Scroll Area */}
-      <div 
-        ref={scrollRef} 
+      <div
+        ref={scrollRef}
         className="flex-1 overflow-auto p-8 md:p-12 flex justify-center bg-slate-100/30 print:p-0 print:bg-white print:block print:overflow-visible scroll-smooth"
       >
-        <div 
+        <div
           ref={previewRef}
           className="origin-top transition-transform duration-300 print:!w-full print:!transform-none print:!h-auto print:!m-0 print:!static"
-          style={{ 
+          style={{
             transform: `scale(${zoom})`,
             width: '8.5in',
             minHeight: '11in'
