@@ -65,7 +65,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
     if (!effectiveText) return null;
 
     const urlRegex = /((?:https?:\/\/|www\.)[^\s<>()]+)/g;
-    const parts: (string | JSX.Element)[] = [];
+    const parts: (string | React.ReactElement)[] = [];
     let lastIndex = 0;
     let match;
 
