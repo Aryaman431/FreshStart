@@ -112,6 +112,16 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
   const projItems = getDisplayArray(data.projects, DUMMY.projects);
   const certItems = getDisplayArray(data.certifications, DUMMY.certifications);
 
+  // Experience is optional — only show if any entry has real data
+  const hasRealExperience = data.experience.some(exp =>
+    isValPresent(exp.company) || isValPresent(exp.role) || isValPresent(exp.responsibilities)
+  );
+
+  // Certifications are optional — only show if any entry has real data
+  const hasRealCertifications = data.certifications.some(cert =>
+    isValPresent(cert.name) || isValPresent(cert.issuer)
+  );
+
   const personalInfoItems = [
     { key: 'phone', content: data.personalInfo.phone, dummy: DUMMY.phone },
     { key: 'email', content: data.personalInfo.email, dummy: DUMMY.email, isEmail: true },
@@ -194,6 +204,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         ))}
       </section>
 
+      {hasRealExperience && (
       <section id="preview-section-experience" className={cn("resume-section mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'experience' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
         <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Experiences</h2>
         {expItems.data.map((exp: any) => (
@@ -213,6 +224,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
           </div>
         ))}
       </section>
+      )}
 
       <section id="preview-section-projects" className={cn("resume-section mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'projects' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
         <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Projects</h2>
@@ -253,6 +265,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         </div>
       </section>
 
+      {hasRealCertifications && (
       <section id="preview-section-certifications" className={cn("resume-section mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'certifications' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
         <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Professional Certifications</h2>
         {certItems.data.map((cert: any) => (
@@ -267,6 +280,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
           </div>
         ))}
       </section>
+      )}
 
       <section id="preview-section-achievements" className={cn("resume-section transition-all p-3 rounded-xl print:p-0 print:mb-0", activeSection === 'achievements' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
         <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Achievements & Awards</h2>
