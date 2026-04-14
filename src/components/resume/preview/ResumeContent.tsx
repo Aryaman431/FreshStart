@@ -1,10 +1,7 @@
 "use client";
 
-
-import React from 'react';
-import { ResumeData } from '@/types/resume';
-import { cn } from '@/lib/utils';
-import { ExternalLink } from 'lucide-react';
+import React from "react";
+import { ResumeData, SkillCategory } from "@/types/resume";
 
 interface ResumeContentProps {
   data: ResumeData;
@@ -12,282 +9,390 @@ interface ResumeContentProps {
   isPrint?: boolean;
 }
 
+// ─── Jake's template dummy data ───────────────────────────────────────────────
 const DUMMY = {
-  fullName: "ALEXANDER VANDERS",
-  email: "alex.vanders@ivy.edu",
-  phone: "212-555-0198",
-  linkedin: "linkedin.com/in/alexvanders",
-  github: "github.com/alexv",
-  summary: "Highly ambitious Computer Science scholar with a specialization in systemic architecture and neural computation. Proven record of conceptualizing and deploying high-impact software solutions within agile, research-driven environments. Dedicated to engineering excellence and the synthesis of elegant technological ecosystems.",
+  fullName: "Jake Ryan",
+  phone: "+1 123-456-7890",
+  email: "jake@su.edu",
+  linkedin: "linkedin.com/in/jake",
+  github: "github.com/jake",
+  summary: "Highly motivated Computer Science graduate with hands-on experience building full-stack web applications. Passionate about clean code, scalable systems, and continuous learning.",
   education: [
-    { id: 'dummy-edu', degree: 'Bachelor of Science in Computer Science', institution: 'Prestige Institute of Technology', year: 'Aug. 2020 -- May 2024', coursework: '' }
+    {
+      id: "d-edu1",
+      institution: "Southwestern University",
+      degree: "Bachelor of Arts in Computer Science, Minor in Business",
+      startDate: "Aug. 2018",
+      endDate: "May 2021",
+      coursework: "Data Structures, Algorithms, Software Engineering, Operating Systems",
+    },
+    {
+      id: "d-edu2",
+      institution: "Blinn College",
+      degree: "Associate's in Liberal Arts",
+      startDate: "Aug. 2014",
+      endDate: "May 2018",
+      coursework: "",
+    },
   ],
   experience: [
-    { id: 'dummy-exp', company: 'Global Tech Systems', role: 'Software Engineering Architect Intern', startDate: 'May 2023', endDate: 'Aug. 2023', responsibilities: "• Orchestrated the migration of legacy data systems to a React-based microservices architecture, enhancing system throughput by 35%.\n• Authored comprehensive technical documentation and collaborated with senior architects to ensure seamless cross-functional delivery.\n• Refined database schemas, optimizing query latency for high-traffic endpoints." }
+    {
+      id: "d-exp1",
+      role: "Undergraduate Research Assistant",
+      company: "Texas A&M University",
+      startDate: "June 2020",
+      endDate: "Present",
+      responsibilities:
+        "Developed a REST API using FastAPI and PostgreSQL to store data from learning management systems\nDeveloped a full-stack web application using Flask, React, PostgreSQL and Docker to analyze GitHub data\nExplored methods to visualize GitHub collaboration in a classroom setting",
+    },
+    {
+      id: "d-exp2",
+      role: "Information Technology Support Specialist",
+      company: "Southwestern University",
+      startDate: "Sep. 2018",
+      endDate: "Present",
+      responsibilities:
+        "Communicate with managers to set up campus computers used on campus\nAssess and troubleshoot computer problems brought by students, faculty and staff\nMaintain upkeep of computers, classroom equipment, and 200 printers across campus",
+    },
   ],
   projects: [
-    { id: 'dummy-proj', title: 'Neural Finance Engine', techStack: 'Next.js, TensorFlow, PostgreSQL', description: "• Engineered a real-time predictive financial model utilizing deep neural networks for market analysis.\n• Developed a high-fidelity user interface with Tailwind CSS, ensuring accessibility and elite performance metrics.\n• Achieved sub-100ms response times for complex analytical computations.", date: "Jan. 2024", link: "github.com/example" }
+    {
+      id: "d-proj1",
+      title: "Gitlytics",
+      techStack: "Python, Flask, React, PostgreSQL, D3",
+      date: "June 2020 -- Present",
+      link: "",
+      description:
+        "Developed a full-stack web application using Flask serving a REST API with React as the frontend\nImplemented GitHub OAuth to get data from user's repositories\nVisualized GitHub data to show collaboration between users",
+    },
+    {
+      id: "d-proj2",
+      title: "Simple Paintball",
+      techStack: "Spigot API, Java, Maven, TravisCI, Git",
+      date: "May 2018 -- May 2020",
+      link: "",
+      description:
+        "Developed a Minecraft server plugin to entertain kids during free time for a previous job\nDeployed on 2 servers and over 4K players have played on those servers\nWrote a unit test suite to verify the plugin works",
+    },
   ],
-  skills: ["C++", "Python", "TypeScript", "React", "Node.js", "PostgreSQL", "Git", "Docker", "AWS"],
-  achievements: "• Presidential Merit Scholar: 2020 -- 2024\n• Grand Prize Winner: Global Innovation Hackathon 2023",
-  certifications: [
-    { id: 'dummy-cert', name: 'Certified Cloud Solutions Architect', issuer: 'CloudTech Alliance', year: '2023' }
-  ]
+  skills: [
+    { id: "d-sk1", category: "Languages",       values: "Java, Python, C/C++, SQL (Postgres), JavaScript, HTML/CSS, R" },
+    { id: "d-sk2", category: "Frameworks",      values: "React, Node.js, Flask, JUnit, WordPress, Material-UI, FastAPI" },
+    { id: "d-sk3", category: "Developer Tools", values: "Git, Docker, TravisCI, Google Cloud Platform, VS Code, PyCharm, IntelliJ" },
+    { id: "d-sk4", category: "Libraries",       values: "pandas, NumPy, Matplotlib" },
+  ] as SkillCategory[],
 };
 
-export function ResumeContent({ data, activeSection, isPrint = false }: ResumeContentProps) {
-  const isValPresent = (val: string | undefined) => !!val && val.trim() !== '';
+// ─── Utilities ────────────────────────────────────────────────────────────────
+const filled = (v: string | undefined): v is string => !!v && v.trim() !== "";
 
-  const renderText = (userVal: string | undefined, dummyVal: string, baseClasses: string = "") => {
-    const isPresent = isValPresent(userVal);
-    const displayValue = isPresent ? userVal : (isPrint ? dummyVal : dummyVal);
-    const effectiveVal = isPresent ? userVal : dummyVal;
+function href(link: string) {
+  return link.startsWith("http") ? link : `https://${link}`;
+}
 
-    if (!isPresent && !isPrint && !dummyVal) return null;
-    
-    return (
-      <span className={cn(
-        baseClasses,
-        isPresent ? "text-slate-900 font-bold" : (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal")
-      )}>
-        {effectiveVal}
+const DIM: React.CSSProperties = { color: "#c8c8c8", fontStyle: "italic", fontWeight: 400 };
+
+function Ghost({ children }: { children: React.ReactNode }) {
+  return <span style={DIM}>{children}</span>;
+}
+
+function Section({ title }: { title: string }) {
+  return (
+    <div style={{ marginTop: 22, marginBottom: 12 }}>
+      <span style={{
+        fontFamily: "'Times New Roman', Times, serif",
+        fontSize: "12px",
+        fontWeight: 700,
+        textTransform: "uppercase",
+        letterSpacing: "0.04em",
+        color: "#000",
+        display: "block",
+        paddingBottom: 10,
+        borderBottom: "1px solid #000",
+      }}>
+        {title}
       </span>
-    );
-  };
-
-  const getLinkUrl = (link: string | undefined) => {
-    if (!link) return "#";
-    return link.startsWith('http') ? link : `https://${link}`;
-  };
-
-  const renderTextWithLinks = (text: string | undefined, isDummy: boolean = false) => {
-    const effectiveText = isValPresent(text) ? text : (isPrint || isDummy ? text : DUMMY.summary); // Fallback logic
-    if (!effectiveText) return null;
-
-    const urlRegex = /((?:https?:\/\/|www\.)[^\s<>()]+)/g;
-    const parts: (string | React.ReactElement)[] = [];
-    let lastIndex = 0;
-    let match;
-
-    while ((match = urlRegex.exec(effectiveText)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push(effectiveText.substring(lastIndex, match.index));
-      }
-      const url = match[0];
-      parts.push(
-        <a
-          key={match.index}
-          href={getLinkUrl(url)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline decoration-slate-300 underline-offset-2 hover:text-primary transition-colors break-all"
-        >
-          {url}
-        </a>
-      );
-      lastIndex = urlRegex.lastIndex;
-    }
-
-    if (lastIndex < effectiveText.length) {
-      parts.push(effectiveText.substring(lastIndex));
-    }
-
-    return <>{parts.map((part, i) => <React.Fragment key={i}>{part}</React.Fragment>)}</>;
-  };
-
-  const getDisplayArray = (arr: any[], dummy: any[]) => {
-    return arr && arr.length > 0 ? { data: arr, isDummy: false } : { data: dummy, isDummy: true };
-  };
-
-  const formatDuration = (start: string | undefined, end: string | undefined, dummyStart: string, dummyEnd: string) => {
-    const isStartPresent = isValPresent(start);
-    const isEndPresent = isValPresent(end);
-    const startDisplay = isStartPresent ? start : dummyStart;
-    const endDisplay = isEndPresent ? end : dummyEnd;
-    return `${startDisplay} -- ${endDisplay}`;
-  };
-
-  const eduItems = getDisplayArray(data.education, DUMMY.education);
-  const expItems = getDisplayArray(data.experience, DUMMY.experience);
-  const projItems = getDisplayArray(data.projects, DUMMY.projects);
-  const certItems = getDisplayArray(data.certifications, DUMMY.certifications);
-
-  // Experience is optional — only show if any entry has real data
-  const hasRealExperience = data.experience.some(exp =>
-    isValPresent(exp.company) || isValPresent(exp.role) || isValPresent(exp.responsibilities)
+    </div>
   );
+}
 
-  // Certifications are optional — only show if any entry has real data
-  const hasRealCertifications = data.certifications.some(cert =>
-    isValPresent(cert.name) || isValPresent(cert.issuer)
+function Row({
+  left, right, bold, italic,
+}: {
+  left: React.ReactNode;
+  right?: React.ReactNode;
+  bold?: boolean;
+  italic?: boolean;
+}) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", lineHeight: 1.3 }}>
+      <span style={{ fontWeight: bold ? 700 : 400, fontStyle: italic ? "italic" : "normal", fontSize: "11px", minWidth: 0, overflow: "visible" }}>
+        {left}
+      </span>
+      {right !== undefined && (
+        <span style={{ fontWeight: 400, fontStyle: italic ? "italic" : "normal", whiteSpace: "nowrap", marginLeft: 8, fontSize: "10px", flexShrink: 0 }}>
+          {right}
+        </span>
+      )}
+    </div>
   );
+}
 
-  const personalInfoItems = [
-    { key: 'phone', content: data.personalInfo.phone, dummy: DUMMY.phone },
-    { key: 'email', content: data.personalInfo.email, dummy: DUMMY.email, isEmail: true },
-    { key: 'linkedin', content: data.personalInfo.linkedin, dummy: DUMMY.linkedin, isLink: true },
-    { key: 'github', content: data.personalInfo.github, dummy: DUMMY.github, isLink: true },
-  ];
+function Bullets({ text, ghost }: { text: string; ghost?: boolean }) {
+  const lines = text.split("\n").map(l => l.replace(/^[•\-–]\s*/, "").trim()).filter(Boolean);
+  return (
+    <ul style={{ margin: "2px 0 0 0", padding: 0, listStyle: "none" }}>
+      {lines.map((line, i) => (
+        <li key={i} style={{ display: "flex", alignItems: "flex-start", marginBottom: 1, paddingLeft: 16, lineHeight: 1.3, fontSize: "11px" }}>
+          <span style={{ display: "inline-block", width: 16, marginLeft: -16, flexShrink: 0, textAlign: "center" }}>•</span>
+          <span style={ghost ? DIM : {}}>{line}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
-  const visibleItems = personalInfoItems.filter(item => isValPresent(item.content));
+function dateRange(start: string, end: string) {
+  if (!filled(start) && !filled(end)) return undefined;
+  if (!filled(end)) return start;
+  if (!filled(start)) return end;
+  return `${start} -- ${end}`;
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+export function ResumeContent({ data, activeSection, isPrint = false }: ResumeContentProps) {
+  const p = data.personalInfo;
+
+  // ── Phone with country code ──
+  const phoneDisplay = filled(p.phone)
+    ? `${p.countryCode || '+91'} ${p.phone}`
+    : null;
+
+  // ── Contact bar ──
+  const contacts: { label: string; link: string }[] = [];
+  if (phoneDisplay)    contacts.push({ label: phoneDisplay,  link: `tel:${(p.countryCode || '+91').replace(/\s/g, '')}${p.phone.replace(/\D/g, '')}` });
+  if (filled(p.email))    contacts.push({ label: p.email,    link: `mailto:${p.email}` });
+  if (filled(p.linkedin)) contacts.push({ label: p.linkedin, link: href(p.linkedin) });
+  if (filled(p.github))   contacts.push({ label: p.github,   link: href(p.github) });
+
+  const useDummyContact = contacts.length === 0;
+  const contactBar = useDummyContact
+    ? [
+        { label: DUMMY.phone,    link: `tel:${DUMMY.phone}` },
+        { label: DUMMY.email,    link: `mailto:${DUMMY.email}` },
+        { label: DUMMY.linkedin, link: href(DUMMY.linkedin) },
+        { label: DUMMY.github,   link: href(DUMMY.github) },
+      ]
+    : contacts;
+
+  // ── Section data ──
+  const hasEdu  = data.education.some(e  => filled(e.institution) || filled(e.degree));
+  const hasExp  = data.experience.some(e => filled(e.company) || filled(e.role) || filled(e.responsibilities));
+  const hasProj = data.projects.some(p  => filled(p.title) || filled(p.description));
+
+  const eduList  = hasEdu  ? data.education  : DUMMY.education;
+  const expList  = hasExp  ? data.experience : DUMMY.experience;
+  const projList = hasProj ? data.projects   : DUMMY.projects;
+
+  // ── Skills: filter rows that have at least a category or values ──
+  const realSkills = data.skills.filter(s => filled(s.category) || filled(s.values));
+  const hasSkills  = realSkills.length > 0;
+  const skillList  = hasSkills ? realSkills : DUMMY.skills;
+
+  const aLink: React.CSSProperties = { color: "#000", textDecoration: "underline", textUnderlineOffset: "4px", textDecorationThickness: "1px", pointerEvents: "auto", cursor: "pointer" };
 
   return (
-    <div 
+    <div
       id={isPrint ? "resume-print-target" : "resume-preview-root"}
-      className={cn(
-        "resume-page-inner bg-white text-black shadow-2xl print:shadow-none print:m-0 print:border-none w-full",
-        !isPrint && "resume-preview-container"
-      )}
-      style={{ 
+      style={{
         fontFamily: "'Times New Roman', Times, serif",
-        padding: isPrint ? '0.5in 0.75in' : '0.5in 0.75in',
-        color: '#000',
-        lineHeight: '1.2',
-        margin: isPrint ? 0 : undefined
+        fontSize: "11px",
+        lineHeight: 1.2,
+        color: "#000",
+        background: "#fff",
+        width: "800px",
+        minWidth: "800px",
+        maxWidth: "800px",
+        boxSizing: "border-box",
+        paddingTop: "28px",
+        paddingBottom: "28px",
+        paddingLeft: "40px",
+        paddingRight: "40px",
+        overflowX: "visible",
+        overflow: "visible",
+        wordBreak: "break-word",
       }}
     >
-      <header id="preview-section-personal" className={cn("resume-section text-center mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-3", activeSection === 'personal' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h1 className="text-2xl mb-1 font-bold tracking-tight uppercase">
-          {renderText(data.personalInfo.fullName, DUMMY.fullName, "uppercase")}
-        </h1>
-        <div className="text-[10pt] flex flex-wrap justify-center items-center text-slate-700 [word-wrap:break-word]">
-          {visibleItems.map((item, index) => (
-            <React.Fragment key={item.key}>
-              <span className={cn("font-bold", !isValPresent(item.content) && !isPrint ? "text-slate-300 italic" : "text-slate-900")}>
-                {item.isLink ? (
-                  <a href={getLinkUrl(item.content)} target="_blank" rel="noopener noreferrer" className="underline decoration-slate-300 underline-offset-2 hover:text-primary transition-colors break-all">
-                    {item.content}
-                  </a>
-                ) : item.isEmail ? (
-                  <a href={`mailto:${item.content}`} className="underline decoration-slate-300 underline-offset-2 hover:text-primary transition-colors break-all">
-                    {item.content}
-                  </a>
-                ) : (
-                  <span className="break-all">{item.content}</span>
-                )}
-              </span>
-              {index < visibleItems.length - 1 && (
-                <span className="text-slate-400 select-none mx-2 print:mx-1.5" aria-hidden="true">|</span>
+      {/* ══ HEADER ══════════════════════════════════════════════════════════ */}
+      <div style={{ textAlign: "center", marginBottom: 14 }}>
+        <div style={{ fontSize: "20px", fontWeight: 700, letterSpacing: "0.01em", lineHeight: 1.15, marginBottom: 8 }}>
+          {filled(p.fullName) ? p.fullName : <Ghost>{DUMMY.fullName}</Ghost>}
+        </div>
+        <div style={{
+          display: "flex",
+          justifyContent: "center",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: "4px 6px",
+          fontSize: "11px",
+          lineHeight: 1.6,
+          marginBottom: 12,
+        }}>
+          {contactBar.map((c, i) => (
+            <React.Fragment key={i}>
+              {useDummyContact ? (
+                <Ghost>
+                  <a href={c.link} style={{ color: "#c8c8c8", textDecoration: "underline" }}>{c.label}</a>
+                </Ghost>
+              ) : (
+                <a
+                  href={c.link}
+                  target={c.link.startsWith('mailto:') || c.link.startsWith('tel:') ? '_self' : '_blank'}
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    if (!c.link.startsWith('mailto:') && !c.link.startsWith('tel:')) {
+                      e.preventDefault();
+                      window.open(c.link, '_blank', 'noopener,noreferrer');
+                    }
+                  }}
+                  style={{
+                    color: "#000",
+                    textDecoration: "underline",
+                    textUnderlineOffset: "4px",
+                    textDecorationThickness: "1px",
+                    wordBreak: "break-all",
+                    pointerEvents: "auto",
+                    cursor: "pointer",
+                  }}
+                >
+                  {c.label}
+                </a>
+              )}
+              {i < contactBar.length - 1 && (
+                <span style={{ margin: "0 6px", color: useDummyContact ? "#c8c8c8" : "#000", flexShrink: 0 }}>|</span>
               )}
             </React.Fragment>
           ))}
-          {visibleItems.length === 0 && !isPrint && (
-            <span className="text-slate-300 italic font-normal">
-              {DUMMY.phone} | {DUMMY.email} | {DUMMY.linkedin} 
-            </span>
-          )}
         </div>
-      </header>
+      </div>
 
-      <section id="preview-section-summary" className={cn("resume-section mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'summary' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Professional Summary</h2>
-        <div className={cn(
-          "text-[11pt] leading-tight whitespace-pre-wrap break-words",
-          !isValPresent(data.professionalSummary) ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "text-slate-800 font-normal"
-        )}>
-          {renderTextWithLinks(data.professionalSummary, !isValPresent(data.professionalSummary))}
-        </div>
-      </section>
-
-      <section id="preview-section-education" className={cn("resume-section mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'education' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Education</h2>
-        {eduItems.data.map((edu: any) => (
-          <div key={edu.id} className="mb-4 resume-item">
-            <div className="flex justify-between text-[11pt]">
-              {renderText(edu.institution, DUMMY.education[0].institution, "font-bold")}
-              {renderText(edu.year, DUMMY.education[0].year, "font-bold")}
-            </div>
-            <div className="italic text-[11pt] text-slate-700">
-              {renderText(edu.degree, DUMMY.education[0].degree, "font-normal")}
-            </div>
+      {/* ══ SUMMARY (conditional) ═══════════════════════════════════════════ */}
+      {(filled(data.professionalSummary)) && (
+        <>
+          <Section title="Summary" />
+          <div style={{ lineHeight: 1.3, marginBottom: 2 }}>
+            {data.professionalSummary}
           </div>
-        ))}
-      </section>
-
-      {hasRealExperience && (
-      <section id="preview-section-experience" className={cn("resume-section mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'experience' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Experiences</h2>
-        {expItems.data.map((exp: any) => (
-          <div key={exp.id} className="mb-5 text-[11pt] resume-item">
-            <div className="flex justify-between">
-              {renderText(exp.role, DUMMY.experience[0].role, "font-bold")}
-              <span className={cn("font-bold", expItems.isDummy ? (isPrint ? "text-slate-400" : "text-slate-300 italic") : "text-slate-900")}>
-                {formatDuration(exp.startDate, exp.endDate, DUMMY.experience[0].startDate, DUMMY.experience[0].endDate)}
-              </span>
-            </div>
-            <div className="italic mb-2 text-slate-700">
-              {renderText(exp.company, DUMMY.experience[0].company, "font-bold")}
-            </div>
-            <div className={cn("whitespace-pre-wrap pl-3 border-l-2 border-slate-100 break-words", expItems.isDummy ? (isPrint ? "text-slate-400" : "text-slate-300 italic") : "text-slate-800")}>
-              {renderTextWithLinks(exp.responsibilities, expItems.isDummy)}
-            </div>
-          </div>
-        ))}
-      </section>
+        </>
       )}
 
-      <section id="preview-section-projects" className={cn("resume-section mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'projects' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Projects</h2>
-        {projItems.data.map((proj: any) => (
-          <div key={proj.id} className="mb-5 text-[11pt] resume-item">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  {renderText(proj.title, DUMMY.projects[0].title, "font-bold")}
-                  <span className="text-slate-300">|</span>
-                  {renderText(proj.techStack, DUMMY.projects[0].techStack, "italic")}
-                </div>
-                {isValPresent(proj.link) && (
-                  <a href={getLinkUrl(proj.link)} target="_blank" rel="noopener noreferrer" className="text-[9pt] text-primary flex items-center hover:underline mt-0.5 print:no-underline print:text-slate-800 break-all">
-                    <ExternalLink className="h-2.5 w-2.5 mr-1" />
-                    {proj.link}
-                  </a>
+      {/* ══ EDUCATION ═══════════════════════════════════════════════════════ */}
+      <Section title="Education" />
+      {(eduList as typeof DUMMY.education).map((edu) => (
+        <div key={edu.id} style={{ marginBottom: 4 }}>
+          <Row
+            bold
+            left={!hasEdu ? <Ghost>{edu.institution}</Ghost> : edu.institution}
+            right={!hasEdu ? <Ghost>{dateRange(edu.startDate, edu.endDate)}</Ghost> : dateRange(edu.startDate, edu.endDate)}
+          />
+          <Row
+            italic
+            left={!hasEdu ? <Ghost>{edu.degree}</Ghost> : edu.degree}
+          />
+          {filled(edu.coursework) && (
+            <div style={{ marginTop: 1 }}>
+              <span style={{ fontWeight: 700 }}>Relevant Coursework: </span>
+              <span style={!hasEdu ? DIM : {}}>{edu.coursework}</span>
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* ══ EXPERIENCE ══════════════════════════════════════════════════════ */}
+      <Section title="Experience" />
+      {(expList as typeof DUMMY.experience).map((exp) => (
+        <div key={exp.id} style={{ marginBottom: 5 }}>
+          <Row
+            bold
+            left={!hasExp ? <Ghost>{exp.role}</Ghost> : exp.role}
+            right={!hasExp ? <Ghost>{dateRange(exp.startDate, exp.endDate)}</Ghost> : dateRange(exp.startDate, exp.endDate)}
+          />
+          <Row italic left={!hasExp ? <Ghost>{exp.company}</Ghost> : exp.company} />
+          <Bullets text={exp.responsibilities} ghost={!hasExp} />
+        </div>
+      ))}
+
+      {/* ══ PROJECTS ════════════════════════════════════════════════════════ */}
+      <Section title="Projects" />
+      {(projList as typeof DUMMY.projects).map((proj) => (
+        <div key={proj.id} style={{ marginBottom: 5 }}>
+          <Row
+            left={
+              <span>
+                <strong style={!hasProj ? DIM : {}}>{proj.title}</strong>
+                {filled(proj.techStack) && (
+                  <>
+                    <span style={{ fontWeight: 400 }}>{" | "}</span>
+                    <em style={!hasProj ? DIM : { fontWeight: 400 }}>{proj.techStack}</em>
+                  </>
                 )}
-              </div>
-              {renderText(proj.date, DUMMY.projects[0].date, "font-bold")}
+              </span>
+            }
+            right={!hasProj ? <Ghost>{proj.date}</Ghost> : filled(proj.date) ? proj.date : undefined}
+          />
+          {filled(proj.link) && (
+            <div style={{ marginTop: 1 }}>
+              <a
+                href={href(proj.link)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => { e.preventDefault(); window.open(href(proj.link), '_blank', 'noopener,noreferrer'); }}
+                style={aLink}
+              >{proj.link}</a>
             </div>
-            <div className={cn("whitespace-pre-wrap pl-3 border-l-2 border-slate-100 mt-1 break-words", projItems.isDummy ? (isPrint ? "text-slate-400" : "text-slate-300 italic") : "text-slate-800")}>
-              {renderTextWithLinks(proj.description, projItems.isDummy)}
-            </div>
-          </div>
-        ))}
-      </section>
-
-      <section id="preview-section-skills" className={cn("resume-section mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'skills' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Skills</h2>
-        <div className="text-[11pt]">
-          <span className={cn("font-bold text-slate-900", data.skills.length === 0 ? (isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal") : "")}>Technology Stack: </span>
-          {data.skills.length > 0 ? (
-            <span className="text-slate-800 font-normal">{data.skills.join(", ")}</span>
-          ) : (
-            <span className={isPrint ? "text-slate-400 font-normal" : "text-slate-300 italic font-normal"}>{DUMMY.skills.join(", ")}</span>
           )}
+          <Bullets text={proj.description} ghost={!hasProj} />
         </div>
-      </section>
+      ))}
 
-      {hasRealCertifications && (
-      <section id="preview-section-certifications" className={cn("resume-section mb-3 sm:mb-5 transition-all p-3 rounded-xl print:p-0 print:mb-6", activeSection === 'certifications' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Professional Certifications</h2>
-        {certItems.data.map((cert: any) => (
-          <div key={cert.id} className="mb-3 text-[11pt] resume-item">
-            <div className="flex justify-between">
-              {renderText(cert.name, DUMMY.certifications[0].name, "font-bold")}
-              {renderText(cert.year, DUMMY.certifications[0].year, "font-bold")}
+      {/* ══ TECHNICAL SKILLS ════════════════════════════════════════════════ */}
+      <Section title="Skills" />
+      <div style={{ lineHeight: 1.4 }}>
+        {skillList.map((row, i) => {
+          const catLabel = filled(row.category) ? row.category : `Category ${i + 1}`;
+          const vals = row.values;
+          return (
+            <div key={row.id}>
+              <span style={{ fontWeight: 700 }}>{catLabel}: </span>
+              {filled(vals)
+                ? <span style={!hasSkills ? DIM : {}}>{vals}</span>
+                : <Ghost>—</Ghost>
+              }
             </div>
-            <div className={cn("italic text-slate-700", certItems.isDummy ? (isPrint ? "text-slate-400" : "text-slate-300") : "text-slate-800")}>
-              {renderTextWithLinks(cert.issuer, certItems.isDummy)}
-            </div>
-          </div>
-        ))}
-      </section>
+          );
+        })}
+      </div>
+
+      {/* ══ ACHIEVEMENTS (conditional) ══════════════════════════════════════ */}
+      {filled(data.achievements) && (
+        <>
+          <Section title="Achievements &amp; Awards" />
+          <Bullets text={data.achievements} />
+        </>
       )}
 
-      <section id="preview-section-achievements" className={cn("resume-section transition-all p-3 rounded-xl print:p-0 print:mb-0", activeSection === 'achievements' && !isPrint && "bg-primary/5 ring-1 ring-primary/20 print:ring-0")}>
-        <h2 className="text-[12pt] font-bold uppercase border-b border-slate-900 pb-4 mb-3">Achievements & Awards</h2>
-        <div className={cn("text-[11pt] whitespace-pre-wrap pl-3 border-l-2 border-slate-100 break-words", !isValPresent(data.achievements) ? (isPrint ? "text-slate-400" : "text-slate-300 italic") : "text-slate-800")}>
-          {renderTextWithLinks(data.achievements, !isValPresent(data.achievements))}
-        </div>
-      </section>
+      {/* ══ CERTIFICATIONS (conditional) ════════════════════════════════════ */}
+      {data.certifications.some(c => filled(c.name)) && (
+        <>
+          <Section title="Certifications" />
+          {data.certifications.filter(c => filled(c.name)).map((cert) => (
+            <div key={cert.id} style={{ marginBottom: 3 }}>
+              <Row bold left={cert.name} right={filled(cert.year) ? cert.year : undefined} />
+              {filled(cert.issuer) && <div style={{ fontStyle: "italic" }}>{cert.issuer}</div>}
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 }

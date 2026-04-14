@@ -1,6 +1,5 @@
 "use client";
 
-
 import React, { useEffect, useRef } from 'react';
 import { Accordion } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
@@ -12,6 +11,25 @@ import { useResume } from '@/app/lib/resume-store';
 import { SectionCard } from './SectionCard';
 import { AIReview } from '../AIReview';
 import { MonthYearPicker } from './MonthYearPicker';
+
+
+// Common country codes
+const COUNTRY_CODES = [
+  { code: '+91', label: '🇮🇳 +91' },
+  { code: '+1',  label: '🇺🇸 +1' },
+  { code: '+44', label: '🇬🇧 +44' },
+  { code: '+61', label: '🇦🇺 +61' },
+  { code: '+49', label: '🇩🇪 +49' },
+  { code: '+33', label: '🇫🇷 +33' },
+  { code: '+81', label: '🇯🇵 +81' },
+  { code: '+86', label: '🇨🇳 +86' },
+  { code: '+971', label: '🇦🇪 +971' },
+  { code: '+65', label: '🇸🇬 +65' },
+  { code: '+60', label: '🇲🇾 +60' },
+  { code: '+55', label: '🇧🇷 +55' },
+  { code: '+27', label: '🇿🇦 +27' },
+  { code: '+7',  label: '🇷🇺 +7' },
+];
 
 export function Editor() {
   const [emailError, setEmailError] = React.useState('');
@@ -27,35 +45,21 @@ export function Editor() {
   };
 
   useEffect(() => {
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     if (activeSection && editorRef.current) {
       const scrollContainer = editorRef.current;
       const sectionElement = scrollContainer.querySelector<HTMLElement>(`#${activeSection}`);
-      
       if (sectionElement) {
         scrollTimeoutRef.current = setTimeout(() => {
           const containerRect = scrollContainer.getBoundingClientRect();
           const elementRect = sectionElement.getBoundingClientRect();
-
           const offset = elementRect.top - containerRect.top;
           const top = scrollContainer.scrollTop + offset - (containerRect.height / 2) + (elementRect.height / 2);
-
-          scrollContainer.scrollTo({
-            top: top,
-            behavior: 'smooth'
-          });
+          scrollContainer.scrollTo({ top, behavior: 'smooth' });
         }, 100);
       }
     }
-    
-    return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
+    return () => { if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current); };
   }, [scrollTrigger]);
 
   const handlePersonalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,70 +77,60 @@ export function Editor() {
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     updateData({ personalInfo: { ...data.personalInfo, email: value } });
-
-    if (!value) {
-      setEmailError('');
-    } else if (!emailRegex.test(value)) {
-      setEmailError('Enter a valid email address (e.g. john@example.com)');
-    } else {
-      setEmailError('');
-    }
+    if (!value) setEmailError('');
+    else if (!emailRegex.test(value)) setEmailError('Enter a valid email address (e.g. john@example.com)');
+    else setEmailError('');
   };
 
   const handleEmailBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value && !emailRegex.test(value)) {
+    if (e.target.value && !emailRegex.test(e.target.value))
       setEmailError('Enter a valid email address (e.g. john@example.com)');
-    }
   };
 
+  // ── Education ──
   const addEducation = () => {
-    const newEdu = { id: crypto.randomUUID(), degree: '', institution: '', startDate: '', endDate: '', coursework: '' };
-    updateData({ education: [...data.education, newEdu] });
+    updateData({ education: [...data.education, { id: crypto.randomUUID(), degree: '', institution: '', startDate: '', endDate: '', coursework: '' }] });
     focusAndScroll('education');
   };
+  const removeEducation = (id: string) => updateData({ education: data.education.filter(e => e.id !== id) });
 
-  const removeEducation = (id: string) => {
-    updateData({ education: data.education.filter(e => e.id !== id) });
-  };
-
-  const addProject = () => {
-    const newProj = { id: crypto.randomUUID(), title: '', description: '', techStack: '', link: '', date: '' };
-    updateData({ projects: [...data.projects, newProj] });
-    focusAndScroll('projects');
-  };
-
-  const removeProject = (id: string) => {
-    updateData({ projects: data.projects.filter(p => p.id !== id) });
-  };
-
+  // ── Experience ──
   const addExperience = () => {
-    const newExp = { id: crypto.randomUUID(), company: '', role: '', startDate: '', endDate: '', responsibilities: '' };
-    updateData({ experience: [...data.experience, newExp] });
+    updateData({ experience: [...data.experience, { id: crypto.randomUUID(), company: '', role: '', startDate: '', endDate: '', responsibilities: '' }] });
     focusAndScroll('experience');
   };
+  const removeExperience = (id: string) => updateData({ experience: data.experience.filter(e => e.id !== id) });
 
-  const removeExperience = (id: string) => {
-    updateData({ experience: data.experience.filter(e => e.id !== id) });
+  // ── Projects ──
+  const addProject = () => {
+    updateData({ projects: [...data.projects, { id: crypto.randomUUID(), title: '', description: '', techStack: '', link: '', date: '' }] });
+    focusAndScroll('projects');
+  };
+  const removeProject = (id: string) => updateData({ projects: data.projects.filter(p => p.id !== id) });
+
+  // ── Skills ──
+  const addSkillRow = () => {
+    updateData({ skills: [...data.skills, { id: crypto.randomUUID(), category: '', values: '' }] });
+  };
+  const removeSkillRow = (id: string) => {
+    if (data.skills.length <= 1) return;
+    updateData({ skills: data.skills.filter(s => s.id !== id) });
+  };
+  const updateSkillRow = (id: string, field: 'category' | 'values', value: string) => {
+    updateData({ skills: data.skills.map(s => s.id === id ? { ...s, [field]: value } : s) });
   };
 
+  // ── Certifications ──
   const addCertification = () => {
-    const newCert = { id: crypto.randomUUID(), name: '', issuer: '', year: '' };
-    updateData({ certifications: [...data.certifications, newCert] });
+    updateData({ certifications: [...data.certifications, { id: crypto.randomUUID(), name: '', issuer: '', year: '' }] });
     focusAndScroll('certifications');
   };
+  const removeCertification = (id: string) => updateData({ certifications: data.certifications.filter(c => c.id !== id) });
 
-  const removeCertification = (id: string) => {
-    updateData({ certifications: data.certifications.filter(c => c.id !== id) });
-  };
-  
   const isEndDateBeforeStartDate = (startDate: string, endDate: string) => {
     if (!startDate || !endDate || endDate === 'Present') return false;
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    return end < start;
+    return new Date(endDate) < new Date(startDate);
   };
-
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -146,7 +140,7 @@ export function Editor() {
             <ListChecks className="mr-2 h-5 w-5" />
             Build Your Resume
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">Guide for Freshers & Students</p>
+          <p className="text-sm text-muted-foreground mt-1">Guide for Freshers &amp; Students</p>
         </div>
         <Button variant="ghost" size="icon" onClick={resetData} title="Clear all data" className="text-muted-foreground hover:text-destructive">
           <RefreshCcw className="h-4 w-4" />
@@ -155,6 +149,8 @@ export function Editor() {
 
       <div ref={editorRef} className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
         <Accordion type="single" collapsible className="w-full" value={activeSection ?? undefined} onValueChange={(val) => focusAndScroll(val)}>
+
+          {/* ── PERSONAL INFO ── */}
           <SectionCard id="personal" title="Personal Information" icon={<User className="h-4 w-4" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -179,21 +175,36 @@ export function Editor() {
                   placeholder="john@example.com"
                   className={emailError ? 'border-destructive focus-visible:ring-destructive' : ''}
                 />
-                {emailError && (
-                  <p className="text-xs text-destructive">{emailError}</p>
-                )}
+                {emailError && <p className="text-xs text-destructive">{emailError}</p>}
               </div>
-              <div className="space-y-2">
-                <Label>Phone (Numbers only, max 10 digits)</Label>
-                <Input
-                  type="tel"
-                  value={data.personalInfo.phone}
-                  onChange={handlePhoneInput}
-                  onFocus={() => focusAndScroll('personal')}
-                  placeholder="1234567890"
-                  maxLength={10}
-                />
+
+              {/* Phone with country code */}
+              <div className="space-y-2 md:col-span-2">
+                <Label>Phone Number</Label>
+                <div className="flex gap-2">
+                  <select
+                    value={data.personalInfo.countryCode || '+91'}
+                    onChange={(e) => updateData({ personalInfo: { ...data.personalInfo, countryCode: e.target.value } })}
+                    className="flex h-9 w-[130px] shrink-0 items-center rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
+                    style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', paddingRight: '26px', appearance: 'none' }}
+                  >
+                    {COUNTRY_CODES.map(c => (
+                      <option key={c.code} value={c.code}>{c.label}</option>
+                    ))}
+                  </select>
+                  <Input
+                    type="tel"
+                    value={data.personalInfo.phone}
+                    onChange={handlePhoneInput}
+                    onFocus={() => focusAndScroll('personal')}
+                    placeholder="9876543210"
+                    maxLength={10}
+                    className="flex-1"
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground">Numbers only, max 10 digits</p>
               </div>
+
               <div className="space-y-2">
                 <Label>LinkedIn URL</Label>
                 <Input
@@ -205,26 +216,27 @@ export function Editor() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Additional Desired Info</Label>
+                <Label>Additional Info</Label>
                 <Input
                   name="github"
                   value={data.personalInfo.github}
                   onChange={handlePersonalChange}
                   onFocus={() => focusAndScroll('personal')}
-                  placeholder="Eg. github.com"
+                  placeholder="github.com/johndoe"
                 />
               </div>
             </div>
           </SectionCard>
 
+          {/* ── PROFESSIONAL SUMMARY ── */}
           <SectionCard id="summary" title="Professional Summary" icon={<FileText className="h-4 w-4" />}>
             <div className="space-y-2">
-              <Label>Profile Summary (2-3 sentences)</Label>
+              <Label>Profile Summary (2–3 sentences)</Label>
               <Textarea
                 value={data.professionalSummary}
                 onChange={(e) => updateData({ professionalSummary: e.target.value })}
                 onFocus={() => focusAndScroll('summary')}
-                placeholder="Highly motivated final-year Computer Science student..."
+                placeholder="Highly motivated final-year Computer Science student with experience in..."
                 className="min-h-[100px]"
               />
               <AIReview
@@ -235,6 +247,7 @@ export function Editor() {
             </div>
           </SectionCard>
 
+          {/* ── EDUCATION ── */}
           <SectionCard id="education" title="Education" icon={<GraduationCap className="h-4 w-4" />}>
             <div className="space-y-6">
               {data.education.map((edu, idx) => {
@@ -252,62 +265,35 @@ export function Editor() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Degree</Label>
-                        <Input
-                          value={edu.degree}
-                          onFocus={() => focusAndScroll('education')}
-                          onChange={(e) => {
-                            const newList = [...data.education];
-                            newList[idx].degree = e.target.value;
-                            updateData({ education: newList });
-                          }} placeholder="B.S. in Computer Science" />
+                        <Input value={edu.degree} onFocus={() => focusAndScroll('education')}
+                          onChange={(e) => { const l = [...data.education]; l[idx].degree = e.target.value; updateData({ education: l }); }}
+                          placeholder="B.S. in Computer Science" />
                       </div>
                       <div className="space-y-2">
                         <Label>Institution</Label>
-                        <Input
-                          value={edu.institution}
-                          onFocus={() => focusAndScroll('education')}
-                          onChange={(e) => {
-                            const newList = [...data.education];
-                            newList[idx].institution = e.target.value;
-                            updateData({ education: newList });
-                          }} placeholder="University of Technology" />
+                        <Input value={edu.institution} onFocus={() => focusAndScroll('education')}
+                          onChange={(e) => { const l = [...data.education]; l[idx].institution = e.target.value; updateData({ education: l }); }}
+                          placeholder="University of Technology" />
                       </div>
                     </div>
-                    <div className="md:col-span-2 space-y-2">
+                    <div className="space-y-2">
                       <Label>Duration Period</Label>
                       <div className="space-y-2">
                         <div>
                           <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">Start Date</Label>
-                          <MonthYearPicker
-                            value={edu.startDate}
-                            onFocus={() => focusAndScroll('education')}
-                            onChange={(val) => {
-                              const newList = [...data.education];
-                              newList[idx].startDate = val;
-                              updateData({ education: newList });
-                            }}
-                          />
+                          <MonthYearPicker value={edu.startDate} onFocus={() => focusAndScroll('education')}
+                            onChange={(val) => { const l = [...data.education]; l[idx].startDate = val; updateData({ education: l }); }} />
                         </div>
                         <div>
                           <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">End Date (or Present)</Label>
-                          <MonthYearPicker
-                            value={edu.endDate}
-                            onFocus={() => focusAndScroll('education')}
-                            allowPresent
-                            onChange={(val) => {
-                              const newList = [...data.education];
-                              newList[idx].endDate = val;
-                              updateData({ education: newList });
-                            }}
-                          />
+                          <MonthYearPicker value={edu.endDate} onFocus={() => focusAndScroll('education')} allowPresent
+                            onChange={(val) => { const l = [...data.education]; l[idx].endDate = val; updateData({ education: l }); }} />
                         </div>
-                        {dateError && (
-                          <p className="text-xs text-destructive">End date cannot be before start date.</p>
-                        )}
+                        {dateError && <p className="text-xs text-destructive">End date cannot be before start date.</p>}
                       </div>
                     </div>
                   </div>
-                )
+                );
               })}
               <Button variant="outline" size="sm" onClick={addEducation} className="w-full">
                 <Plus className="mr-2 h-4 w-4" /> Add Another Institution
@@ -315,99 +301,61 @@ export function Editor() {
             </div>
           </SectionCard>
 
+          {/* ── EXPERIENCE ── */}
           <SectionCard id="experience" title="Internships / Experience" icon={<Briefcase className="h-4 w-4" />}>
             <div className="space-y-6">
               {data.experience.map((exp, idx) => {
-                 const dateError = isEndDateBeforeStartDate(exp.startDate, exp.endDate);
-                 return (
-                <div key={exp.id} className="space-y-4 p-4 border rounded-lg bg-muted/30">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold uppercase text-muted-foreground">Experience {idx + 1}</span>
-                     {data.experience.length > 1 && (
+                const dateError = isEndDateBeforeStartDate(exp.startDate, exp.endDate);
+                return (
+                  <div key={exp.id} className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold uppercase text-muted-foreground">Experience {idx + 1}</span>
+                      {data.experience.length > 1 && (
                         <Button variant="ghost" size="icon" onClick={() => removeExperience(exp.id)} className="h-8 w-8 text-destructive">
-                        <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
-                     )}
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Company</Label>
-                      <Input
-                        value={exp.company}
-                        onFocus={() => focusAndScroll('experience')}
-                        onChange={(e) => {
-                          const newList = [...data.experience];
-                          newList[idx].company = e.target.value;
-                          updateData({ experience: newList });
-                        }} placeholder="Tech Solutions Inc." />
+                      )}
                     </div>
-                    <div className="space-y-2">
-                      <Label>Role</Label>
-                      <Input
-                        value={exp.role}
-                        onFocus={() => focusAndScroll('experience')}
-                        onChange={(e) => {
-                          const newList = [...data.experience];
-                          newList[idx].role = e.target.value;
-                          updateData({ experience: newList });
-                        }} placeholder="Software Engineering Intern" />
-                    </div>
-                    <div className="md:col-span-2 space-y-2">
-                      <Label>Duration Period</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <div>
-                          <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">Start Date</Label>
-                          <MonthYearPicker
-                            value={exp.startDate}
-                            onFocus={() => focusAndScroll('experience')}
-                            onChange={(val) => {
-                              const newList = [...data.experience];
-                              newList[idx].startDate = val;
-                              updateData({ experience: newList });
-                            }}
-                          />
+                        <Label>Company</Label>
+                        <Input value={exp.company} onFocus={() => focusAndScroll('experience')}
+                          onChange={(e) => { const l = [...data.experience]; l[idx].company = e.target.value; updateData({ experience: l }); }}
+                          placeholder="Tech Solutions Inc." />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Role</Label>
+                        <Input value={exp.role} onFocus={() => focusAndScroll('experience')}
+                          onChange={(e) => { const l = [...data.experience]; l[idx].role = e.target.value; updateData({ experience: l }); }}
+                          placeholder="Software Engineering Intern" />
+                      </div>
+                      <div className="md:col-span-2 space-y-2">
+                        <Label>Duration Period</Label>
+                        <div className="space-y-2">
+                          <div>
+                            <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">Start Date</Label>
+                            <MonthYearPicker value={exp.startDate} onFocus={() => focusAndScroll('experience')}
+                              onChange={(val) => { const l = [...data.experience]; l[idx].startDate = val; updateData({ experience: l }); }} />
+                          </div>
+                          <div>
+                            <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">End Date (or Present)</Label>
+                            <MonthYearPicker value={exp.endDate} onFocus={() => focusAndScroll('experience')} allowPresent
+                              onChange={(val) => { const l = [...data.experience]; l[idx].endDate = val; updateData({ experience: l }); }} />
+                          </div>
+                          {dateError && <p className="text-xs text-destructive">End date cannot be before start date.</p>}
                         </div>
-                        <div>
-                          <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">End Date (or Present)</Label>
-                          <MonthYearPicker
-                            value={exp.endDate}
-                            onFocus={() => focusAndScroll('experience')}
-                            allowPresent
-                            onChange={(val) => {
-                              const newList = [...data.experience];
-                              newList[idx].endDate = val;
-                              updateData({ experience: newList });
-                            }}
-                          />
-                        </div>
-                         {dateError && (
-                            <p className="text-xs text-destructive">End date cannot be before start date.</p>
-                         )}
                       </div>
                     </div>
+                    <div className="space-y-2">
+                      <Label>Responsibilities &amp; Achievements</Label>
+                      <Textarea value={exp.responsibilities} onFocus={() => focusAndScroll('experience')}
+                        onChange={(e) => { const l = [...data.experience]; l[idx].responsibilities = e.target.value; updateData({ experience: l }); }}
+                        placeholder="• Developed and maintained..." />
+                      <AIReview sectionName="Internships / Experience" content={exp.responsibilities}
+                        onAccept={(val) => { const l = [...data.experience]; l[idx].responsibilities = val; updateData({ experience: l }); }} />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Responsibilities & Achievements</Label>
-                    <Textarea
-                      value={exp.responsibilities}
-                      onFocus={() => focusAndScroll('experience')}
-                      onChange={(e) => {
-                        const newList = [...data.experience];
-                        newList[idx].responsibilities = e.target.value;
-                        updateData({ experience: newList });
-                      }} placeholder="• Developed and maintained..." />
-                    <AIReview
-                      sectionName="Internships / Experience"
-                      content={exp.responsibilities}
-                      onAccept={(val) => {
-                        const newList = [...data.experience];
-                        newList[idx].responsibilities = val;
-                        updateData({ experience: newList });
-                      }}
-                    />
-                  </div>
-                </div>
-                )
+                );
               })}
               <Button variant="outline" size="sm" onClick={addExperience} className="w-full">
                 <Plus className="mr-2 h-4 w-4" /> Add Another Experience
@@ -415,6 +363,7 @@ export function Editor() {
             </div>
           </SectionCard>
 
+          {/* ── PROJECTS ── */}
           <SectionCard id="projects" title="Key Projects" icon={<Star className="h-4 w-4" />}>
             <div className="space-y-6">
               {data.projects.map((proj, idx) => (
@@ -422,79 +371,43 @@ export function Editor() {
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-bold uppercase text-muted-foreground">Project {idx + 1}</span>
                     {data.projects.length > 1 && (
-                        <Button variant="ghost" size="icon" onClick={() => removeProject(proj.id)} className="h-8 w-8 text-destructive">
+                      <Button variant="ghost" size="icon" onClick={() => removeProject(proj.id)} className="h-8 w-8 text-destructive">
                         <Trash2 className="h-4 w-4" />
-                        </Button>
+                      </Button>
                     )}
                   </div>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Title</Label>
-                        <Input
-                          value={proj.title}
-                          onFocus={() => focusAndScroll('projects')}
-                          onChange={(e) => {
-                            const newList = [...data.projects];
-                            newList[idx].title = e.target.value;
-                            updateData({ projects: newList });
-                          }} placeholder="E-commerce Platform" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Tech Stack</Label>
-                        <Input
-                          value={proj.techStack}
-                          onFocus={() => focusAndScroll('projects')}
-                          onChange={(e) => {
-                            const newList = [...data.projects];
-                            newList[idx].techStack = e.target.value;
-                            updateData({ projects: newList });
-                          }} placeholder="Next.js, Tailwind CSS, Stripe" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Project Link</Label>
-                        <Input
-                          value={proj.link}
-                          onFocus={() => focusAndScroll('projects')}
-                          onChange={(e) => {
-                            const newList = [...data.projects];
-                            newList[idx].link = e.target.value;
-                            updateData({ projects: newList });
-                          }} placeholder="github.com/user/project" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Date (Month - Year)</Label>
-                        <MonthYearPicker
-                          value={proj.date}
-                          onFocus={() => focusAndScroll('projects')}
-                          onChange={(val) => {
-                            const newList = [...data.projects];
-                            newList[idx].date = val;
-                            updateData({ projects: newList });
-                          }}
-                        />
-                      </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Title</Label>
+                      <Input value={proj.title} onFocus={() => focusAndScroll('projects')}
+                        onChange={(e) => { const l = [...data.projects]; l[idx].title = e.target.value; updateData({ projects: l }); }}
+                        placeholder="E-commerce Platform" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Description (Bullet points)</Label>
-                      <Textarea
-                        value={proj.description}
-                        onFocus={() => focusAndScroll('projects')}
-                        onChange={(e) => {
-                          const newList = [...data.projects];
-                          newList[idx].description = e.target.value;
-                          updateData({ projects: newList });
-                        }} placeholder="• Designed and implemented..." />
-                      <AIReview
-                        sectionName="Projects"
-                        content={proj.description}
-                        onAccept={(val) => {
-                          const newList = [...data.projects];
-                          newList[idx].description = val;
-                          updateData({ projects: newList });
-                        }}
-                      />
+                      <Label>Tech Stack</Label>
+                      <Input value={proj.techStack} onFocus={() => focusAndScroll('projects')}
+                        onChange={(e) => { const l = [...data.projects]; l[idx].techStack = e.target.value; updateData({ projects: l }); }}
+                        placeholder="Next.js, Tailwind CSS, Stripe" />
                     </div>
+                    <div className="space-y-2">
+                      <Label>Project Link</Label>
+                      <Input value={proj.link} onFocus={() => focusAndScroll('projects')}
+                        onChange={(e) => { const l = [...data.projects]; l[idx].link = e.target.value; updateData({ projects: l }); }}
+                        placeholder="github.com/user/project" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Date</Label>
+                      <MonthYearPicker value={proj.date} onFocus={() => focusAndScroll('projects')}
+                        onChange={(val) => { const l = [...data.projects]; l[idx].date = val; updateData({ projects: l }); }} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description (Bullet points)</Label>
+                    <Textarea value={proj.description} onFocus={() => focusAndScroll('projects')}
+                      onChange={(e) => { const l = [...data.projects]; l[idx].description = e.target.value; updateData({ projects: l }); }}
+                      placeholder="• Designed and implemented..." />
+                    <AIReview sectionName="Projects" content={proj.description}
+                      onAccept={(val) => { const l = [...data.projects]; l[idx].description = val; updateData({ projects: l }); }} />
                   </div>
                 </div>
               ))}
@@ -504,65 +417,83 @@ export function Editor() {
             </div>
           </SectionCard>
 
+          {/* ── SKILLS ── */}
           <SectionCard id="skills" title="Skills" icon={<Code className="h-4 w-4" />}>
-            <div className="space-y-2">
-              <Label>Technical Skills (Comma separated)</Label>
-              <Input
-                value={data.skills.join(', ')}
-                onFocus={() => focusAndScroll('skills')}
-                onChange={(e) => updateData({ skills: e.target.value.split(',').map(s => s.trim()) })}
-                placeholder="Java, Python, JavaScript, React, Node.js"
-              />
-              <p className="text-[10px] text-muted-foreground">Separate skills with commas for best formatting.</p>
+            <div className="space-y-3">
+              <p className="text-[11px] text-muted-foreground">
+                Add skill categories (e.g. Languages, Frameworks) and their values separated by commas.
+              </p>
+              {data.skills.map((row) => (
+                <div key={row.id} className="flex gap-2 items-start">
+                  <div className="w-[140px] shrink-0 space-y-1">
+                    <Label className="text-[10px] uppercase text-muted-foreground">Category</Label>
+                    <Input
+                      value={row.category}
+                      onChange={(e) => updateSkillRow(row.id, 'category', e.target.value)}
+                      onFocus={() => focusAndScroll('skills')}
+                      placeholder="Languages"
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <Label className="text-[10px] uppercase text-muted-foreground">Values (comma separated)</Label>
+                    <Input
+                      value={row.values}
+                      onChange={(e) => updateSkillRow(row.id, 'values', e.target.value)}
+                      onFocus={() => focusAndScroll('skills')}
+                      placeholder="Python, Java, C++"
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="pt-5">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeSkillRow(row.id)}
+                      disabled={data.skills.length <= 1}
+                      className="h-9 w-9 text-destructive disabled:opacity-30"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <Button variant="outline" size="sm" onClick={addSkillRow} className="w-full mt-1">
+                <Plus className="mr-2 h-4 w-4" /> Add Skill Category
+              </Button>
             </div>
           </SectionCard>
 
+          {/* ── CERTIFICATIONS ── */}
           <SectionCard id="certifications" title="Certifications" icon={<Award className="h-4 w-4" />}>
             <div className="space-y-6">
               {data.certifications.map((cert, idx) => (
                 <div key={cert.id} className="space-y-4 p-4 border rounded-lg bg-muted/30">
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-bold uppercase text-muted-foreground">Certification {idx + 1}</span>
-                     {data.certifications.length > 1 && (
-                        <Button variant="ghost" size="icon" onClick={() => removeCertification(cert.id)} className="h-8 w-8 text-destructive">
+                    {data.certifications.length > 1 && (
+                      <Button variant="ghost" size="icon" onClick={() => removeCertification(cert.id)} className="h-8 w-8 text-destructive">
                         <Trash2 className="h-4 w-4" />
-                        </Button>
-                     )}
+                      </Button>
+                    )}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Name</Label>
-                      <Input
-                        value={cert.name}
-                        onFocus={() => focusAndScroll('certifications')}
-                        onChange={(e) => {
-                          const newList = [...data.certifications];
-                          newList[idx].name = e.target.value;
-                          updateData({ certifications: newList });
-                        }} placeholder="AWS Certified Developer" />
+                      <Input value={cert.name} onFocus={() => focusAndScroll('certifications')}
+                        onChange={(e) => { const l = [...data.certifications]; l[idx].name = e.target.value; updateData({ certifications: l }); }}
+                        placeholder="AWS Certified Developer" />
                     </div>
                     <div className="space-y-2">
                       <Label>Issuer</Label>
-                      <Input
-                        value={cert.issuer}
-                        onFocus={() => focusAndScroll('certifications')}
-                        onChange={(e) => {
-                          const newList = [...data.certifications];
-                          newList[idx].issuer = e.target.value;
-                          updateData({ certifications: newList });
-                        }} placeholder="Amazon Web Services" />
+                      <Input value={cert.issuer} onFocus={() => focusAndScroll('certifications')}
+                        onChange={(e) => { const l = [...data.certifications]; l[idx].issuer = e.target.value; updateData({ certifications: l }); }}
+                        placeholder="Amazon Web Services" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Year / Date (Month - Year)</Label>
-                      <MonthYearPicker
-                        value={cert.year}
-                        onFocus={() => focusAndScroll('certifications')}
-                        onChange={(val) => {
-                          const newList = [...data.certifications];
-                          newList[idx].year = val;
-                          updateData({ certifications: newList });
-                        }}
-                      />
+                      <Label>Year / Date</Label>
+                      <MonthYearPicker value={cert.year} onFocus={() => focusAndScroll('certifications')}
+                        onChange={(val) => { const l = [...data.certifications]; l[idx].year = val; updateData({ certifications: l }); }} />
                     </div>
                   </div>
                 </div>
@@ -573,6 +504,7 @@ export function Editor() {
             </div>
           </SectionCard>
 
+          {/* ── ACHIEVEMENTS ── */}
           <SectionCard id="achievements" title="Achievements & Awards" icon={<Award className="h-4 w-4" />}>
             <div className="space-y-2">
               <Label>List your achievements (one per line)</Label>
@@ -585,6 +517,7 @@ export function Editor() {
               />
             </div>
           </SectionCard>
+
         </Accordion>
       </div>
     </div>

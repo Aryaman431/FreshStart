@@ -5,7 +5,6 @@ import React from 'react';
 import { ResumeProvider, useResume } from '@/app/lib/resume-store';
 import { Editor } from '@/components/resume/editor/Editor';
 import { Preview } from '@/components/resume/preview/Preview';
-import { ResumeContent } from '@/components/resume/preview/ResumeContent';
 import { Button } from '@/components/ui/button';
 import { FileUser, LogOut, ArrowLeft, UserCircle, Loader2, MailWarning } from 'lucide-react';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
@@ -20,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 function BuilderContent() {
   const isMobile = useIsMobile();
   const [mounted, setMounted] = React.useState(false);
-  const { data, isLoading: isDataLoading } = useResume();
+  const { isLoading: isDataLoading } = useResume();
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const { toast } = useToast();
@@ -177,10 +176,7 @@ function BuilderContent() {
           </div>
         )}
 
-        {/* HIGH FIDELITY PRINT ENGINE: isolated container for surgical print accuracy */}
-        <div className="hidden print:block print:static print:w-full print:h-auto print-container">
-          <ResumeContent data={data} isPrint={true} />
-        </div>
+        {/* No separate print instance — window.print() prints the preview DOM directly */}
       </main>
     </div>
   );

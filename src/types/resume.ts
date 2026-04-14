@@ -1,9 +1,8 @@
 export interface PersonalInfo {
-
-  
   fullName: string;
   email: string;
   phone: string;
+  countryCode: string;
   linkedin: string;
   github: string;
   additionalInfo: string;
@@ -43,6 +42,12 @@ export interface Certification {
   year: string;
 }
 
+export interface SkillCategory {
+  id: string;
+  category: string;
+  values: string;
+}
+
 export interface Language {
   id: string;
   name: string;
@@ -53,7 +58,7 @@ export interface ResumeData {
   personalInfo: PersonalInfo;
   professionalSummary: string;
   education: Education[];
-  skills: string[];
+  skills: SkillCategory[];
   projects: Project[];
   experience: Experience[];
   certifications: Certification[];
@@ -68,13 +73,14 @@ export const initialResumeData: ResumeData = {
     fullName: '',
     email: '',
     phone: '',
+    countryCode: '+91',
     linkedin: '',
     github: '',
     additionalInfo: '',
   },
   professionalSummary: '',
   education: [{ id: '1', degree: '', institution: '', startDate: '', endDate: '', coursework: '' }],
-  skills: [],
+  skills: [{ id: '1', category: 'Languages', values: '' }],
   projects: [{ id: '1', title: '', description: '', techStack: '', link: '', date: '' }],
   experience: [{ id: '1', company: '', role: '', startDate: '', endDate: '', responsibilities: '' }],
   certifications: [{ id: '1', name: '', issuer: '', year: '' }],

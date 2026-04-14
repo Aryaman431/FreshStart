@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Resume links — clickable, correct underline gap ───────────────────── */
+#resume-preview-root a,
+#resume-print-target a {
+  text-underline-offset: 4px !important;
+  text-decoration-thickness: 1px !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
 @layer base {
   :root {
     --background: 265 40% 98%;
