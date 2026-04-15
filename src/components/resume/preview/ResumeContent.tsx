@@ -326,39 +326,41 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         ))}
       </div>
 
-      {/* ══ PROJECTS ════════════════════════════════════════════════════════ */}
-      <div data-section>
-        <Section title="Projects" />
-        {(projList as typeof DUMMY.projects).map((proj) => (
-          <div key={proj.id} style={{ marginBottom: 5 }}>
-            <Row
-              left={
-                <span>
-                  <strong style={!hasProj ? DIM : {}}>{proj.title}</strong>
-                  {filled(proj.techStack) && (
-                    <>
-                      <span style={{ fontWeight: 400 }}>{" | "}</span>
-                      <em style={!hasProj ? DIM : { fontWeight: 400 }}>{proj.techStack}</em>
-                    </>
-                  )}
-                </span>
-              }
-              right={!hasProj ? <Ghost>{proj.date}</Ghost> : filled(proj.date) ? proj.date : undefined}
-            />
-            {filled(proj.link) && (
-              <div style={{ marginTop: 1 }}>
-                <a
-                  href={href(proj.link)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={aLink}
-                >{proj.link}</a>
-              </div>
-            )}
-            <Bullets text={proj.description} ghost={!hasProj} />
-          </div>
-        ))}
-      </div>
+      {/* ══ PROJECTS (optional) ═════════════════════════════════════════════ */}
+      {hasProj && (
+        <div data-section>
+          <Section title="Projects" />
+          {data.projects.map((proj) => (
+            <div key={proj.id} style={{ marginBottom: 5 }}>
+              <Row
+                left={
+                  <span>
+                    <strong>{proj.title}</strong>
+                    {filled(proj.techStack) && (
+                      <>
+                        <span style={{ fontWeight: 400 }}>{" | "}</span>
+                        <em style={{ fontWeight: 400 }}>{proj.techStack}</em>
+                      </>
+                    )}
+                  </span>
+                }
+                right={filled(proj.date) ? proj.date : undefined}
+              />
+              {filled(proj.link) && (
+                <div style={{ marginTop: 1 }}>
+                  <a
+                    href={href(proj.link)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={aLink}
+                  >{proj.link}</a>
+                </div>
+              )}
+              <Bullets text={proj.description} />
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* ══ TECHNICAL SKILLS ════════════════════════════════════════════════ */}
       <div data-section>
