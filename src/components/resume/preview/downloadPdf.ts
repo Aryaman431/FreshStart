@@ -4,12 +4,9 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { ResumeData } from '@/types/resume';
 
-const RESUME_WIDTH_PX = 820;
+const RESUME_WIDTH_PX = 800;
 
 export async function downloadResumePdf(data: ResumeData): Promise<void> {
-  // ── Off-screen container ─────────────────────────────────────────────────
-  // position:absolute + left far off-screen = full layout width, no clipping.
-  // We also set overflow:visible so nothing gets cut.
   const wrapper = document.createElement('div');
   wrapper.style.cssText = `
     position: absolute;
@@ -29,7 +26,6 @@ export async function downloadResumePdf(data: ResumeData): Promise<void> {
   const root = createRoot(wrapper);
   root.render(createElement(ResumeContent, { data, isPrint: true }));
 
-  // Wait for React + fonts to fully render
   await new Promise(resolve => setTimeout(resolve, 900));
 
   const element = wrapper.firstElementChild as HTMLElement;
@@ -39,29 +35,48 @@ export async function downloadResumePdf(data: ResumeData): Promise<void> {
     return;
   }
 
-  // Force the element to its natural height, full width
-  const captureW = RESUME_WIDTH_PX;
-  const captureH = element.scrollHeight;
+  // Apply underline styles inline — globals.css doesn't apply in the clone
+  element.querySelectorAll<HTMLAnchorElement>('a').forEach(a => {
+    a.style.textUnderlineOffset = '4px';
+    a.style.textDecorationThickness = '1px';
+    a.style.textDecoration = 'underline';
+  });
+
+  // Get exact rendered dimensions — single source of truth for both
+  // canvas capture size and link annotation scaling
+  const rootRect = element.getBoundingClientRect();
+
+  const captureW = rootRect.width;
+  const captureH = rootRect.height;
 
   const canvas = await html2canvas(element, {
     scale: 3,
     useCORS: true,
     logging: false,
     backgroundColor: '#ffffff',
-    // Explicitly tell html2canvas the capture dimensions
     width: captureW,
     height: captureH,
-    // Large windowWidth prevents any responsive CSS from kicking in
     windowWidth: 1600,
     windowHeight: captureH,
     scrollX: 0,
     scrollY: 0,
     x: 0,
     y: 0,
+    onclone: (_doc, clonedEl) => {
+      clonedEl.style.width = `${RESUME_WIDTH_PX}px`;
+      clonedEl.style.minWidth = `${RESUME_WIDTH_PX}px`;
+      clonedEl.style.maxWidth = `${RESUME_WIDTH_PX}px`;
+      clonedEl.style.overflow = 'visible';
+      clonedEl.querySelectorAll<HTMLAnchorElement>('a').forEach(a => {
+        a.style.textUnderlineOffset = '4px';
+        a.style.textDecorationThickness = '1px';
+        a.style.textDecoration = 'underline';
+      });
+    },
   });
 
   const imgData = canvas.toDataURL('image/png');
-  const pdfWidth = 210; // A4 mm
+  const pdfWidth = 210;
   const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
   const pdf = new jsPDF({
@@ -80,21 +95,20 @@ export async function downloadResumePdf(data: ResumeData): Promise<void> {
     const rawHref = anchor.getAttribute('href');
     if (!rawHref || rawHref === '#') return;
 
-    // Accumulate offset relative to the resume root element
-    let ax = 0;
-    let ay = 0;
-    let node: HTMLElement | null = anchor;
-    while (node && node !== element) {
-      ax += node.offsetLeft;
-      ay += node.offsetTop;
-      node = node.offsetParent as HTMLElement | null;
-    }
+    const rect = anchor.getBoundingClientRect();
+    const x = (rect.left - rootRect.left) * scaleX;
+    const y = (rect.top - rootRect.top) * scaleY;
+    const w = rect.width * scaleX;
+    const h = rect.height * scaleY;
 
-    const url = rawHref.startsWith('http') || rawHref.startsWith('mailto') || rawHref.startsWith('tel')
+    // Skip zero-size anchors (hidden/collapsed)
+    if (w <= 0 || h <= 0) return;
+
+    const url = rawHref.startsWith('http') || rawHref.startsWith('mailto:') || rawHref.startsWith('tel:')
       ? rawHref
       : `https://${rawHref}`;
 
-    pdf.link(ax * scaleX, ay * scaleY, anchor.offsetWidth * scaleX, anchor.offsetHeight * scaleY, { url });
+    pdf.link(x, y, w, h, { url });
   });
 
   root.unmount();

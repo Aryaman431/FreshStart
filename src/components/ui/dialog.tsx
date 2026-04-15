@@ -6,10 +6,7 @@ import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-// Wrap Root to always pass preventScroll — stops Radix locking body overflow
-const Dialog = (props: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root>) => (
-  <DialogPrimitive.Root preventScroll={false} {...props} />
-)
+const Dialog = DialogPrimitive.Root
 
 const DialogTrigger = DialogPrimitive.Trigger
 
