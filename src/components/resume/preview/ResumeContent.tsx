@@ -98,7 +98,7 @@ function Ghost({ children }: { children: React.ReactNode }) {
 
 function Section({ title }: { title: string }) {
   return (
-    <div style={{ marginTop: 22, marginBottom: 12 }}>
+    <div style={{ marginTop: 22, marginBottom: 12, breakAfter: "avoid", pageBreakAfter: "avoid" }}>
       <span style={{
         fontFamily: "'Times New Roman', Times, serif",
         fontSize: "12px",
@@ -214,8 +214,8 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         minWidth: "800px",
         maxWidth: "800px",
         boxSizing: "border-box",
-        paddingTop: "28px",
-        paddingBottom: "28px",
+        paddingTop: "40px",
+        paddingBottom: "40px",
         paddingLeft: "40px",
         paddingRight: "40px",
         overflowX: "visible",
@@ -278,112 +278,119 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
 
       {/* ══ SUMMARY (conditional) ═══════════════════════════════════════════ */}
       {(filled(data.professionalSummary)) && (
-        <>
+        <div data-section>
           <Section title="Summary" />
           <div style={{ lineHeight: 1.3, marginBottom: 2 }}>
             {data.professionalSummary}
           </div>
-        </>
+        </div>
       )}
 
       {/* ══ EDUCATION ═══════════════════════════════════════════════════════ */}
-      <Section title="Education" />
-      {(eduList as typeof DUMMY.education).map((edu) => (
-        <div key={edu.id} style={{ marginBottom: 4 }}>
-          <Row
-            bold
-            left={!hasEdu ? <Ghost>{edu.institution}</Ghost> : edu.institution}
-            right={!hasEdu ? <Ghost>{dateRange(edu.startDate, edu.endDate)}</Ghost> : dateRange(edu.startDate, edu.endDate)}
-          />
-          <Row
-            italic
-            left={!hasEdu ? <Ghost>{edu.degree}</Ghost> : edu.degree}
-          />
-          {filled(edu.coursework) && (
-            <div style={{ marginTop: 1 }}>
-              <span style={{ fontWeight: 700 }}>Relevant Coursework: </span>
-              <span style={!hasEdu ? DIM : {}}>{edu.coursework}</span>
-            </div>
-          )}
-        </div>
-      ))}
+      <div data-section>
+        <Section title="Education" />
+        {(eduList as typeof DUMMY.education).map((edu) => (
+          <div key={edu.id} style={{ marginBottom: 4 }}>
+            <Row
+              bold
+              left={!hasEdu ? <Ghost>{edu.institution}</Ghost> : edu.institution}
+              right={!hasEdu ? <Ghost>{dateRange(edu.startDate, edu.endDate)}</Ghost> : dateRange(edu.startDate, edu.endDate)}
+            />
+            <Row
+              italic
+              left={!hasEdu ? <Ghost>{edu.degree}</Ghost> : edu.degree}
+            />
+            {filled(edu.coursework) && (
+              <div style={{ marginTop: 1 }}>
+                <span style={{ fontWeight: 700 }}>Relevant Coursework: </span>
+                <span style={!hasEdu ? DIM : {}}>{edu.coursework}</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
 
       {/* ══ EXPERIENCE ══════════════════════════════════════════════════════ */}
-      <Section title="Experience" />
-      {(expList as typeof DUMMY.experience).map((exp) => (
-        <div key={exp.id} style={{ marginBottom: 5 }}>
-          <Row
-            bold
-            left={!hasExp ? <Ghost>{exp.role}</Ghost> : exp.role}
-            right={!hasExp ? <Ghost>{dateRange(exp.startDate, exp.endDate)}</Ghost> : dateRange(exp.startDate, exp.endDate)}
-          />
-          <Row italic left={!hasExp ? <Ghost>{exp.company}</Ghost> : exp.company} />
-          <Bullets text={exp.responsibilities} ghost={!hasExp} />
-        </div>
-      ))}
+      <div data-section>
+        <Section title="Experience" />
+        {(expList as typeof DUMMY.experience).map((exp) => (
+          <div key={exp.id} style={{ marginBottom: 5 }}>
+            <Row
+              bold
+              left={!hasExp ? <Ghost>{exp.role}</Ghost> : exp.role}
+              right={!hasExp ? <Ghost>{dateRange(exp.startDate, exp.endDate)}</Ghost> : dateRange(exp.startDate, exp.endDate)}
+            />
+            <Row italic left={!hasExp ? <Ghost>{exp.company}</Ghost> : exp.company} />
+            <Bullets text={exp.responsibilities} ghost={!hasExp} />
+          </div>
+        ))}
+      </div>
 
       {/* ══ PROJECTS ════════════════════════════════════════════════════════ */}
-      <Section title="Projects" />
-      {(projList as typeof DUMMY.projects).map((proj) => (
-        <div key={proj.id} style={{ marginBottom: 5 }}>
-          <Row
-            left={
-              <span>
-                <strong style={!hasProj ? DIM : {}}>{proj.title}</strong>
-                {filled(proj.techStack) && (
-                  <>
-                    <span style={{ fontWeight: 400 }}>{" | "}</span>
-                    <em style={!hasProj ? DIM : { fontWeight: 400 }}>{proj.techStack}</em>
-                  </>
-                )}
-              </span>
-            }
-            right={!hasProj ? <Ghost>{proj.date}</Ghost> : filled(proj.date) ? proj.date : undefined}
-          />
-          {filled(proj.link) && (
-            <div style={{ marginTop: 1 }}>
-              <a
-                href={href(proj.link)}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => { e.preventDefault(); window.open(href(proj.link), '_blank', 'noopener,noreferrer'); }}
-                style={aLink}
-              >{proj.link}</a>
-            </div>
-          )}
-          <Bullets text={proj.description} ghost={!hasProj} />
-        </div>
-      ))}
+      <div data-section>
+        <Section title="Projects" />
+        {(projList as typeof DUMMY.projects).map((proj) => (
+          <div key={proj.id} style={{ marginBottom: 5 }}>
+            <Row
+              left={
+                <span>
+                  <strong style={!hasProj ? DIM : {}}>{proj.title}</strong>
+                  {filled(proj.techStack) && (
+                    <>
+                      <span style={{ fontWeight: 400 }}>{" | "}</span>
+                      <em style={!hasProj ? DIM : { fontWeight: 400 }}>{proj.techStack}</em>
+                    </>
+                  )}
+                </span>
+              }
+              right={!hasProj ? <Ghost>{proj.date}</Ghost> : filled(proj.date) ? proj.date : undefined}
+            />
+            {filled(proj.link) && (
+              <div style={{ marginTop: 1 }}>
+                <a
+                  href={href(proj.link)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={aLink}
+                >{proj.link}</a>
+              </div>
+            )}
+            <Bullets text={proj.description} ghost={!hasProj} />
+          </div>
+        ))}
+      </div>
 
       {/* ══ TECHNICAL SKILLS ════════════════════════════════════════════════ */}
-      <Section title="Skills" />
-      <div style={{ lineHeight: 1.4 }}>
-        {skillList.map((row, i) => {
-          const catLabel = filled(row.category) ? row.category : `Category ${i + 1}`;
-          const vals = row.values;
-          return (
-            <div key={row.id}>
-              <span style={{ fontWeight: 700 }}>{catLabel}: </span>
-              {filled(vals)
-                ? <span style={!hasSkills ? DIM : {}}>{vals}</span>
-                : <Ghost>—</Ghost>
-              }
-            </div>
-          );
-        })}
+      <div data-section>
+        <Section title="Skills" />
+        <div style={{ lineHeight: 1.4 }}>
+          {skillList.map((row, i) => {
+            const catLabel = filled(row.category) ? row.category : `Category ${i + 1}`;
+            const vals = row.values;
+            return (
+              <div key={row.id}>
+                <span style={{ fontWeight: 700 }}>{catLabel}: </span>
+                {filled(vals)
+                  ? <span style={!hasSkills ? DIM : {}}>{vals}</span>
+                  : <Ghost>—</Ghost>
+                }
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* ══ ACHIEVEMENTS (conditional) ══════════════════════════════════════ */}
       {filled(data.achievements) && (
-        <>
+        <div data-section>
           <Section title="Achievements &amp; Awards" />
           <Bullets text={data.achievements} />
-        </>
+        </div>
       )}
 
       {/* ══ CERTIFICATIONS (conditional) ════════════════════════════════════ */}
       {data.certifications.some(c => filled(c.name)) && (
-        <>
+        <div data-section>
           <Section title="Certifications" />
           {data.certifications.filter(c => filled(c.name)).map((cert) => (
             <div key={cert.id} style={{ marginBottom: 3 }}>
@@ -391,7 +398,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
               {filled(cert.issuer) && <div style={{ fontStyle: "italic" }}>{cert.issuer}</div>}
             </div>
           ))}
-        </>
+        </div>
       )}
     </div>
   );

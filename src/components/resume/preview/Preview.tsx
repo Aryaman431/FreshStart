@@ -59,7 +59,7 @@ export function Preview() {
       <div
         ref={scrollRef}
         className="flex-1 overflow-auto"
-        style={{ background: '#e2e8f0', padding: '32px 24px' }}
+        style={{ background: '#d1d5db', padding: '40px 24px' }}
       >
         <div
           ref={previewRef}
@@ -70,7 +70,10 @@ export function Preview() {
             margin: '0 auto',
             background: '#ffffff',
             boxSizing: 'border-box',
-            boxShadow: '0 2px 24px 0 rgba(80,60,140,0.13)',
+            boxShadow: '0 4px 32px 0 rgba(80,60,140,0.18)',
+            position: 'relative',
+            /* Snap content to A4 page multiples with a bottom gap */
+            paddingBottom: '60px',
           }}
         >
           <ResumeContent data={data} activeSection={activeSection} />

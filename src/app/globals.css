@@ -11,6 +11,20 @@
   cursor: pointer !important;
 }
 
+/* ── A4 page-break visual guide ─────────────────────────────────────────────
+   Shows a dashed line at every 1131px (A4 height at 800px width) so the user
+   can see where page breaks will occur. Only visible in screen preview.
+──────────────────────────────────────────────────────────────────────────── */
+#resume-preview-root {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 1130px,
+    #e2e8f0 1130px,
+    #e2e8f0 1131px
+  );
+}
+
 @layer base {
   :root {
     --background: 265 40% 98%;
