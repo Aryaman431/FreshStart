@@ -463,7 +463,19 @@ export function Editor() {
               </Button>
             </div>
           </SectionCard>
-
+            {/* ── ACHIEVEMENTS ── */}
+          <SectionCard id="achievements" title="Achievements & Awards" icon={<Award className="h-4 w-4" />}>
+            <div className="space-y-2">
+              <Label>List your achievements (one per line)</Label>
+              <Textarea
+                value={data.achievements}
+                onFocus={() => focusAndScroll('achievements')}
+                onChange={(e) => updateData({ achievements: e.target.value })}
+                placeholder="• Won 1st place in National Hackathon..."
+                className="min-h-[100px]"
+              />
+            </div>
+          </SectionCard>
           {/* ── CERTIFICATIONS ── */}
           <SectionCard id="certifications" title="Certifications" icon={<Award className="h-4 w-4" />}>
             <div className="space-y-6">
@@ -504,19 +516,7 @@ export function Editor() {
             </div>
           </SectionCard>
 
-          {/* ── ACHIEVEMENTS ── */}
-          <SectionCard id="achievements" title="Achievements & Awards" icon={<Award className="h-4 w-4" />}>
-            <div className="space-y-2">
-              <Label>List your achievements (one per line)</Label>
-              <Textarea
-                value={data.achievements}
-                onFocus={() => focusAndScroll('achievements')}
-                onChange={(e) => updateData({ achievements: e.target.value })}
-                placeholder="• Won 1st place in National Hackathon..."
-                className="min-h-[100px]"
-              />
-            </div>
-          </SectionCard>
+          
 
         </Accordion>
       </div>
