@@ -103,7 +103,7 @@ export function Editor() {
 
   // ── Projects ──
   const addProject = () => {
-    updateData({ projects: [...data.projects, { id: crypto.randomUUID(), title: '', description: '', techStack: '', link: '', date: '' }] });
+    updateData({ projects: [...data.projects, { id: crypto.randomUUID(), title: '', description: '', techStack: '', link: '', date: '', startDate: '', endDate: '' }] });
     focusAndScroll('projects');
   };
   const removeProject = (id: string) => updateData({ projects: data.projects.filter(p => p.id !== id) });
@@ -395,10 +395,20 @@ export function Editor() {
                         onChange={(e) => { const l = [...data.projects]; l[idx].link = e.target.value; updateData({ projects: l }); }}
                         placeholder="github.com/user/project" />
                     </div>
-                    <div className="space-y-2">
-                      <Label>Date</Label>
-                      <MonthYearPicker value={proj.date} onFocus={() => focusAndScroll('projects')}
-                        onChange={(val) => { const l = [...data.projects]; l[idx].date = val; updateData({ projects: l }); }} />
+                    <div className="md:col-span-2 space-y-2">
+                      <Label>Duration</Label>
+                      <div className="space-y-2">
+                        <div>
+                          <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">Start Date</Label>
+                          <MonthYearPicker value={proj.startDate || ''} onFocus={() => focusAndScroll('projects')}
+                            onChange={(val) => { const l = [...data.projects]; l[idx].startDate = val; updateData({ projects: l }); }} />
+                        </div>
+                        <div>
+                          <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">End Date (or Present)</Label>
+                          <MonthYearPicker value={proj.endDate || ''} onFocus={() => focusAndScroll('projects')} allowPresent
+                            onChange={(val) => { const l = [...data.projects]; l[idx].endDate = val; updateData({ projects: l }); }} />
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div className="space-y-2">

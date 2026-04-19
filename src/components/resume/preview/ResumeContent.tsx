@@ -9,7 +9,10 @@ interface ResumeContentProps {
   isPrint?: boolean;
 }
 
-// ─── Jake's template dummy data ───────────────────────────────────────────────
+// Latin Modern Roman is not available as a web font; we use the closest
+// system/web equivalent stack that matches its metrics.
+const FONT = "'Latin Modern Roman', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif";
+
 const DUMMY = {
   fullName: "Jake Ryan",
   phone: "+1 123-456-7890",
@@ -83,7 +86,6 @@ const DUMMY = {
   ] as SkillCategory[],
 };
 
-// ─── Utilities ────────────────────────────────────────────────────────────────
 const filled = (v: string | undefined): v is string => !!v && v.trim() !== "";
 
 function href(link: string) {
@@ -98,9 +100,9 @@ function Ghost({ children }: { children: React.ReactNode }) {
 
 function Section({ title }: { title: string }) {
   return (
-    <div style={{ marginTop: 22, marginBottom: 12, breakAfter: "avoid", pageBreakAfter: "avoid" }}>
+    <div style={{ marginTop: 22, marginBottom: 1, breakAfter: "avoid", pageBreakAfter: "avoid" }}>
       <span style={{
-        fontFamily: "'Times New Roman', Times, serif",
+        fontFamily: FONT,
         fontSize: "12px",
         fontWeight: 700,
         textTransform: "uppercase",
@@ -130,7 +132,8 @@ function Row({
         {left}
       </span>
       {right !== undefined && (
-        <span style={{ fontWeight: 400, fontStyle: italic ? "italic" : "normal", whiteSpace: "nowrap", marginLeft: 8, fontSize: "10px", flexShrink: 0 }}>
+        // Dates are bold
+        <span style={{ fontWeight: 700, fontStyle: "normal", whiteSpace: "nowrap", marginLeft: 8, fontSize: "10px", flexShrink: 0 }}>
           {right}
         </span>
       )}
@@ -159,21 +162,18 @@ function dateRange(start: string, end: string) {
   return `${start} -- ${end}`;
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
 export function ResumeContent({ data, activeSection, isPrint = false }: ResumeContentProps) {
   const p = data.personalInfo;
 
-  // ── Phone with country code ──
   const phoneDisplay = filled(p.phone)
     ? `${p.countryCode || '+91'} ${p.phone}`
     : null;
 
-  // ── Contact bar ──
   const contacts: { label: string; link: string }[] = [];
-  if (phoneDisplay)    contacts.push({ label: phoneDisplay,  link: `tel:${(p.countryCode || '+91').replace(/\s/g, '')}${p.phone.replace(/\D/g, '')}` });
-  if (filled(p.email))    contacts.push({ label: p.email,    link: `mailto:${p.email}` });
-  if (filled(p.linkedin)) contacts.push({ label: p.linkedin, link: href(p.linkedin) });
-  if (filled(p.github))   contacts.push({ label: p.github,   link: href(p.github) });
+  if (phoneDisplay)       contacts.push({ label: phoneDisplay,  link: `tel:${(p.countryCode || '+91').replace(/\s/g, '')}${p.phone.replace(/\D/g, '')}` });
+  if (filled(p.email))    contacts.push({ label: p.email,       link: `mailto:${p.email}` });
+  if (filled(p.linkedin)) contacts.push({ label: p.linkedin,    link: href(p.linkedin) });
+  if (filled(p.github))   contacts.push({ label: p.github,      link: href(p.github) });
 
   const useDummyContact = contacts.length === 0;
   const contactBar = useDummyContact
@@ -185,27 +185,31 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
       ]
     : contacts;
 
-  // ── Section data ──
   const hasEdu  = data.education.some(e  => filled(e.institution) || filled(e.degree));
   const hasExp  = data.experience.some(e => filled(e.company) || filled(e.role) || filled(e.responsibilities));
   const hasProj = data.projects.some(p  => filled(p.title) || filled(p.description));
 
-  const eduList  = hasEdu  ? data.education  : DUMMY.education;
-  const expList  = hasExp  ? data.experience : DUMMY.experience;
-  const projList = hasProj ? data.projects   : DUMMY.projects;
+  const eduList = hasEdu ? data.education : DUMMY.education;
+  const expList = hasExp ? data.experience : DUMMY.experience;
 
-  // ── Skills: filter rows that have at least a category or values ──
   const realSkills = data.skills.filter(s => filled(s.category) || filled(s.values));
   const hasSkills  = realSkills.length > 0;
   const skillList  = hasSkills ? realSkills : DUMMY.skills;
 
-  const aLink: React.CSSProperties = { color: "#000", textDecoration: "underline", textUnderlineOffset: "4px", textDecorationThickness: "1px", pointerEvents: "auto", cursor: "pointer" };
+  const aLink: React.CSSProperties = {
+    color: "#000",
+    textDecoration: "underline",
+    textUnderlineOffset: "4px",
+    textDecorationThickness: "1px",
+    pointerEvents: "auto",
+    cursor: "pointer",
+  };
 
   return (
     <div
       id={isPrint ? "resume-print-target" : "resume-preview-root"}
       style={{
-        fontFamily: "'Times New Roman', Times, serif",
+        fontFamily: FONT,
         fontSize: "11px",
         lineHeight: 1.2,
         color: "#000",
@@ -218,14 +222,14 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         paddingBottom: "40px",
         paddingLeft: "40px",
         paddingRight: "40px",
-        overflowX: "visible",
         overflow: "visible",
         wordBreak: "break-word",
       }}
     >
       {/* ══ HEADER ══════════════════════════════════════════════════════════ */}
       <div style={{ textAlign: "center", marginBottom: 14 }}>
-        <div style={{ fontSize: "20px", fontWeight: 700, letterSpacing: "0.01em", lineHeight: 1.15, marginBottom: 8 }}>
+        {/* Name: increased by 2 units (20px → 22px) */}
+        <div style={{ fontSize: "22px", fontWeight: 700, letterSpacing: "0.01em", lineHeight: 1.15, marginBottom: 8 }}>
           {filled(p.fullName) ? p.fullName : <Ghost>{DUMMY.fullName}</Ghost>}
         </div>
         <div style={{
@@ -249,12 +253,6 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
                   href={c.link}
                   target={c.link.startsWith('mailto:') || c.link.startsWith('tel:') ? '_self' : '_blank'}
                   rel="noopener noreferrer"
-                  onClick={(e) => {
-                    if (!c.link.startsWith('mailto:') && !c.link.startsWith('tel:')) {
-                      e.preventDefault();
-                      window.open(c.link, '_blank', 'noopener,noreferrer');
-                    }
-                  }}
                   style={{
                     color: "#000",
                     textDecoration: "underline",
@@ -277,7 +275,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
       </div>
 
       {/* ══ SUMMARY (conditional) ═══════════════════════════════════════════ */}
-      {(filled(data.professionalSummary)) && (
+      {filled(data.professionalSummary) && (
         <div data-section>
           <Section title="Summary" />
           <div style={{ lineHeight: 1.3, marginBottom: 2 }}>
@@ -344,16 +342,15 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
                     )}
                   </span>
                 }
-                right={filled(proj.date) ? proj.date : undefined}
+                right={filled(proj.startDate || '') || filled(proj.endDate || '')
+                ? dateRange(proj.startDate || '', proj.endDate || '')
+                : filled(proj.date) ? proj.date : undefined}
               />
               {filled(proj.link) && (
                 <div style={{ marginTop: 1 }}>
-                  <a
-                    href={href(proj.link)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={aLink}
-                  >{proj.link}</a>
+                  <a href={href(proj.link)} target="_blank" rel="noopener noreferrer" style={aLink}>
+                    {proj.link}
+                  </a>
                 </div>
               )}
               <Bullets text={proj.description} />
@@ -382,15 +379,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         </div>
       </div>
 
-      {/* ══ ACHIEVEMENTS (conditional) ══════════════════════════════════════ */}
-      {filled(data.achievements) && (
-        <div data-section>
-          <Section title="Achievements &amp; Awards" />
-          <Bullets text={data.achievements} />
-        </div>
-      )}
-
-      {/* ══ CERTIFICATIONS (conditional) ════════════════════════════════════ */}
+      {/* ══ CERTIFICATIONS (conditional) — swapped before Achievements ══════ */}
       {data.certifications.some(c => filled(c.name)) && (
         <div data-section>
           <Section title="Certifications" />
@@ -400,6 +389,14 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
               {filled(cert.issuer) && <div style={{ fontStyle: "italic" }}>{cert.issuer}</div>}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ══ ACHIEVEMENTS (conditional) — swapped after Certifications ════════ */}
+      {filled(data.achievements) && (
+        <div data-section>
+          <Section title="Achievements &amp; Awards" />
+          <Bullets text={data.achievements} />
         </div>
       )}
     </div>

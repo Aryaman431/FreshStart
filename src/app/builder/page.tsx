@@ -66,7 +66,7 @@ function BuilderContent() {
           </div>
           <button 
             onClick={handleResendVerification}
-            className="underline hover:text-amber-900 transition-colors"
+            className="y hover:text-amber-900 transition-colors"
           >
             Resend Verification Link
           </button>
