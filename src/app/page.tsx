@@ -116,6 +116,7 @@ Perks:
 export default function LandingPage() {
   const [text, setText] = useState('');
   const [selectedJob, setSelectedJob] = useState<typeof JOBS[0] | null>(null);
+  const [infoModal, setInfoModal] = useState<string | null>(null);
   const staticPart = "Level Up Your ";
   const dynamicPart = "Resume in < 1 Min.";
   
@@ -447,16 +448,16 @@ export default function LandingPage() {
                 <h4 className="font-bold text-xs uppercase tracking-[0.3em] text-white/40">Platform</h4>
                 <ul className="space-y-4 font-bold text-lg">
                   <li><Link href="/builder" className="hover:text-primary transition-colors">Resume Engine</Link></li>
-                  <li><Link href="#" className="hover:text-primary transition-colors">ATS Logic</Link></li>
-                  <li><Link href="#" className="hover:text-primary transition-colors">Diagnostics</Link></li>
+                  <li><button onClick={() => setInfoModal('ats')} className="hover:text-primary transition-colors text-left">ATS Logic</button></li>
+                  <li><button onClick={() => setInfoModal('diagnostics')} className="hover:text-primary transition-colors text-left">Diagnostics</button></li>
                 </ul>
               </div>
               <div className="space-y-8">
                 <h4 className="font-bold text-xs uppercase tracking-[0.3em] text-white/40">Company</h4>
                 <ul className="space-y-4 font-bold text-lg">
-                  <li><Link href="#" className="hover:text-primary transition-colors">Our Vision</Link></li>
-                  <li><Link href="#" className="hover:text-primary transition-colors">Security</Link></li>
-                  <li><Link href="#" className="hover:text-primary transition-colors">Privacy</Link></li>
+                  <li><button onClick={() => setInfoModal('vision')} className="hover:text-primary transition-colors text-left">Our Vision</button></li>
+                  <li><button onClick={() => setInfoModal('security')} className="hover:text-primary transition-colors text-left">Security</button></li>
+                  <li><button onClick={() => setInfoModal('privacy')} className="hover:text-primary transition-colors text-left">Privacy</button></li>
                 </ul>
               </div>
             </div>
@@ -469,6 +470,94 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* ── Info Modals ─────────────────────────────────────────────────── */}
+      <Dialog open={!!infoModal} onOpenChange={(open) => !open && setInfoModal(null)}>
+        <DialogContent className="sm:max-w-[520px] rounded-[2rem] border-none shadow-2xl">
+          {infoModal === 'ats' && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-black">ATS Logic</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 text-muted-foreground leading-relaxed">
+                <p>Applicant Tracking Systems (ATS) are software tools used by recruiters to filter resumes before a human ever reads them. FreshStart is built with ATS compatibility at its core.</p>
+                <ul className="space-y-2 list-disc pl-5">
+                  <li>Clean single-column layout that parsers can read top-to-bottom without confusion</li>
+                  <li>Standard section headings (Education, Experience, Skills) that ATS systems recognise</li>
+                  <li>No tables, columns, or graphics that break parsing</li>
+                  <li>Serif font output that renders cleanly in both screen and print contexts</li>
+                  <li>Plain-text bullet points with no special characters that get mangled</li>
+                </ul>
+                <p className="text-sm">Result: your resume passes the filter and reaches a real person.</p>
+              </div>
+            </>
+          )}
+          {infoModal === 'diagnostics' && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-black">Diagnostics</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 text-muted-foreground leading-relaxed">
+                <p>FreshStart includes an AI-powered review system that analyses each section of your resume and suggests improvements.</p>
+                <ul className="space-y-2 list-disc pl-5">
+                  <li><span className="font-semibold text-foreground">Section-level AI review</span> — click the AI Review button on any section to get targeted feedback</li>
+                  <li><span className="font-semibold text-foreground">Gap detection</span> — the AI flags missing information like dates, descriptions, or quantifiable achievements</li>
+                  <li><span className="font-semibold text-foreground">One-click accept</span> — accept AI suggestions directly into your resume without copy-pasting</li>
+                  <li><span className="font-semibold text-foreground">Real-time preview</span> — every change reflects instantly in the live PDF preview on the right</li>
+                </ul>
+              </div>
+            </>
+          )}
+          {infoModal === 'vision' && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-black">Our Vision</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 text-muted-foreground leading-relaxed">
+                <p>FreshStart was built for one reason: the job application process is broken for new graduates.</p>
+                <p>Most resume builders are designed for experienced professionals. They assume you have years of work history, multiple roles, and a polished personal brand. Fresh graduates and final-year students are left with templates that don't fit their reality.</p>
+                <p>We built FreshStart specifically for students and freshers — with guidance at every step, AI assistance that understands entry-level contexts, and a clean LaTeX-quality output that competes with any professional resume.</p>
+                <p className="font-semibold text-foreground">Our goal: make your first impression count, regardless of how much experience you have.</p>
+              </div>
+            </>
+          )}
+          {infoModal === 'security' && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-black">Security</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 text-muted-foreground leading-relaxed">
+                <p>Your resume data is personal. Here is how we protect it:</p>
+                <ul className="space-y-2 list-disc pl-5">
+                  <li><span className="font-semibold text-foreground">Firebase Authentication</span> — industry-standard auth with email verification and anonymous guest sessions</li>
+                  <li><span className="font-semibold text-foreground">Firestore security rules</span> — your data is stored under your user ID and is only accessible by you</li>
+                  <li><span className="font-semibold text-foreground">Local storage backup</span> — your resume is also saved locally so you never lose work even without an account</li>
+                  <li><span className="font-semibold text-foreground">No third-party data sharing</span> — your resume content is never sold or shared with recruiters, advertisers, or any third party</li>
+                  <li><span className="font-semibold text-foreground">HTTPS everywhere</span> — all data in transit is encrypted</li>
+                </ul>
+              </div>
+            </>
+          )}
+          {infoModal === 'privacy' && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-black">Privacy Policy</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 text-muted-foreground leading-relaxed text-sm">
+                <p className="font-semibold text-foreground">What we collect</p>
+                <p>When you create an account: your email address. When you use the builder: your resume content (name, contact info, work history, etc.) stored in your personal Firestore document.</p>
+                <p className="font-semibold text-foreground">What we do not collect</p>
+                <p>We do not collect payment information, browsing history, or any data beyond what you explicitly enter into the resume builder.</p>
+                <p className="font-semibold text-foreground">How we use your data</p>
+                <p>Solely to provide the resume building service. Your resume content is used to render your preview and generate your PDF. It is not used for advertising, profiling, or any other purpose.</p>
+                <p className="font-semibold text-foreground">Deleting your data</p>
+                <p>You can clear all resume data at any time using the reset button in the builder. To delete your account entirely, contact us.</p>
+                <p className="text-xs text-muted-foreground/60">Last updated: {new Date().getFullYear()}</p>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
