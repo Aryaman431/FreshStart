@@ -2,16 +2,18 @@
 
 import React, { useRef, useState } from 'react';
 import { useResume } from '@/app/lib/resume-store';
-import { Download, Loader2, Eye } from 'lucide-react';
+import { Download, Loader2, Eye, BarChart2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ResumeContent } from './ResumeContent';
 import { PreviewModal } from './PreviewModal';
+import { ScoreModal } from './ScoreModal';
 import { downloadResumePdf } from './downloadPdf';
 
 export function Preview() {
   const { data, activeSection } = useResume();
   const [isDownloading, setIsDownloading] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showScoreModal, setShowScoreModal] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -29,15 +31,25 @@ export function Preview() {
   return (
     <div className="flex flex-col h-full bg-slate-100/50">
       {/* Controls Bar */}
-      <div className="p-4 border-b bg-white flex items-center justify-between shrink-0 print:hidden z-10 shadow-sm">
+      <div className="p-3 border-b bg-white flex items-center justify-between gap-2 shrink-0 print:hidden z-10 shadow-sm">
         <Button
           variant="default"
           size="sm"
           onClick={() => setShowPreviewModal(true)}
-          className="bg-purple-300 hover:bg-purple-400 text-purple-900 font-semibold shadow shadow-purple-200 transition-all rounded-full px-5"
+          className="bg-purple-300 hover:bg-purple-400 text-purple-900 font-semibold shadow shadow-purple-200 transition-all rounded-full px-4"
         >
-          <Eye className="h-4 w-4 mr-2" />
-          Preview Resume
+          <Eye className="h-4 w-4 mr-1.5" />
+          Preview
+        </Button>
+
+        <Button
+          variant="default"
+          size="sm"
+          onClick={() => setShowScoreModal(true)}
+          className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold shadow shadow-emerald-200 transition-all rounded-full px-4"
+        >
+          <BarChart2 className="h-4 w-4 mr-1.5" />
+          Check Score
         </Button>
 
         <Button
@@ -45,12 +57,12 @@ export function Preview() {
           size="sm"
           onClick={handleDownloadPDF}
           disabled={isDownloading}
-          className="bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 transition-all rounded-full px-6 min-w-[160px]"
+          className="bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 transition-all rounded-full px-4 min-w-[140px]"
         >
           {isDownloading ? (
-            <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</>
+            <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" />Generating...</>
           ) : (
-            <><Download className="h-4 w-4 mr-2" />Download PDF</>
+            <><Download className="h-4 w-4 mr-1.5" />Download PDF</>
           )}
         </Button>
       </div>
@@ -82,6 +94,10 @@ export function Preview() {
 
       {showPreviewModal && (
         <PreviewModal data={data} onClose={() => setShowPreviewModal(false)} />
+      )}
+
+      {showScoreModal && (
+        <ScoreModal data={data} onClose={() => setShowScoreModal(false)} />
       )}
     </div>
   );
