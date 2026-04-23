@@ -22,15 +22,15 @@ Mode requested: {{mode}}
 
 Rules for all variations:
 - Start with a strong past-tense action verb
-- Be metric-driven: include numbers, percentages, or outcomes where possible
+- Only include metrics or numbers if they are present in the original input — do NOT invent percentages or figures
 - Maximum 20 words per bullet
-- No filler words
-- No first-person pronouns
+- No filler words, no first-person pronouns
+- Each variation must use a different opening verb and structure
 
 Variation labels to use:
-1. "Action-Oriented" — emphasise the action and ownership
-2. "Metric-Driven" — emphasise measurable outcomes (use [X%] or [N users] placeholders if no metrics given)
-3. "Stronger" — most impactful version combining both
+1. "Action-Oriented" — emphasise the action and ownership clearly
+2. "Metric-Driven" — emphasise measurable outcomes; only add [placeholder] if the input hints at a result
+3. "Stronger" — most concise and impactful version combining clarity and specificity
 
 Input bullet:
 {{{bullet}}}`,

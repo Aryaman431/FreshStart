@@ -32,28 +32,38 @@ const refineSectionContentPrompt = ai.definePrompt({
   name: 'refineSectionContentPrompt',
   input: { schema: RefineSectionContentInputSchema },
   output: { schema: RefineSectionContentOutputSchema },
-  prompt: `You are an elite career consultant specializing in high-impact professional narratives for top-tier graduates. Your objective is to refine the provided content for the "{{sectionName}}" section into a "posh," sophisticated, and technically authoritative masterpiece.
+  prompt: `You are a professional resume writing assistant. Convert the user's input into structured bullet points.
 
-Guidelines for Sophistication:
-1. **Elevated Vocabulary**: Replace generic verbs with high-impact synonyms (e.g., use "orchestrated" instead of "managed," "synthesized" instead of "combined," "conceptualized" instead of "thought of").
-2. **Technical Precision**: Ensure technical terms are used accurately and with authority.
-3. **Quantifiable Excellence**: Emphasize results and metrics. If none are provided, suggest placeholders like "[X% increase]" or "[Impact Outcome]".
-4. **Conciseness & Flow**: Remove any linguistic fluff. Every word must serve a purpose.
-5. **Contextual Poshness**:
-   {{#if isSummary}}
-     Draft a compelling 2-3 sentence synthesis that highlights elite skills and ambitious career trajectories. Use an authoritative, confident tone.
-   {{/if}}
-   {{#if isProjects}}
-     Focus on "Architecting Solutions." Use bullet points that describe the challenge, the sophisticated tech stack used, and the elegant outcome.
-   {{/if}}
-   {{#if isExperience}}
-     Focus on "Professional Trajectory." Describe roles in terms of high-level contributions and strategic impact rather than just daily tasks.
-   {{/if}}
+OUTPUT RULES (strict):
+- Return 3 to 5 bullet points only. No paragraphs, no prose.
+- Each bullet starts with a strong action verb.
+- Each bullet is 20 words or fewer.
+- Do NOT add fake metrics, percentages, or numbers unless they appear in the input.
+- Each bullet must be unique in structure and opening verb.
 
-User-provided content for "{{sectionName}}":
+SECTION-SPECIFIC RULES for "{{sectionName}}":
+{{#if isExperience}}
+Focus on responsibilities, impact, and collaboration.
+Use verbs like: Developed, Led, Collaborated, Designed, Implemented, Supported, Managed.
+{{/if}}
+{{#if isProjects}}
+Focus on what was built, technologies used, and key features.
+Mention the tech stack naturally within the bullet.
+Use verbs like: Built, Implemented, Developed, Created, Integrated, Designed.
+{{/if}}
+{{#if isAchievements}}
+Focus on awards, recognitions, ranks, and certifications. Keep factual and concise.
+Use verbs like: Secured, Achieved, Ranked, Earned, Won, Completed.
+Do NOT start every bullet with a verb if the achievement is a noun (e.g. "1st place in...").
+{{/if}}
+{{#if isSummary}}
+Write 2-3 concise sentences summarising background, skills, and goal. Factual, no fluff.
+{{/if}}
+
+User input for "{{sectionName}}":
 {{{sectionContent}}}
 
-Provide a refined version that sounds elite, polished, and ready for a top-tier firm.`,
+Return bullet points only. List key changes in the improvements array.`,
 });
 
 const refineSectionContentFlow = ai.defineFlow(
