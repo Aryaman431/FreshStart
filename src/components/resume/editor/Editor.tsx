@@ -11,6 +11,7 @@ import { useResume } from '@/app/lib/resume-store';
 import { SectionCard } from './SectionCard';
 import { AIReview } from '../AIReview';
 import { MonthYearPicker } from './MonthYearPicker';
+import { BulletImprover } from './BulletImprover';
 
 
 // Common country codes
@@ -351,6 +352,10 @@ export function Editor() {
                       <Textarea value={exp.responsibilities} onFocus={() => focusAndScroll('experience')}
                         onChange={(e) => { const l = [...data.experience]; l[idx].responsibilities = e.target.value; updateData({ experience: l }); }}
                         placeholder="• Developed and maintained..." />
+                      <BulletImprover
+                        bullet={exp.responsibilities}
+                        onAccept={(val) => { const l = [...data.experience]; l[idx].responsibilities = val; updateData({ experience: l }); }}
+                      />
                       <AIReview sectionName="Internships / Experience" content={exp.responsibilities}
                         onAccept={(val) => { const l = [...data.experience]; l[idx].responsibilities = val; updateData({ experience: l }); }} />
                     </div>
@@ -416,6 +421,10 @@ export function Editor() {
                     <Textarea value={proj.description} onFocus={() => focusAndScroll('projects')}
                       onChange={(e) => { const l = [...data.projects]; l[idx].description = e.target.value; updateData({ projects: l }); }}
                       placeholder="• Designed and implemented..." />
+                    <BulletImprover
+                      bullet={proj.description}
+                      onAccept={(val) => { const l = [...data.projects]; l[idx].description = val; updateData({ projects: l }); }}
+                    />
                     <AIReview sectionName="Projects" content={proj.description}
                       onAccept={(val) => { const l = [...data.projects]; l[idx].description = val; updateData({ projects: l }); }} />
                   </div>

@@ -2,11 +2,12 @@
 
 import React, { useRef, useState } from 'react';
 import { useResume } from '@/app/lib/resume-store';
-import { Download, Loader2, Eye, BarChart2 } from 'lucide-react';
+import { Download, Loader2, Eye, BarChart2, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ResumeContent } from './ResumeContent';
 import { PreviewModal } from './PreviewModal';
 import { ScoreModal } from './ScoreModal';
+import { JobToolsModal } from './JobToolsModal';
 import { downloadResumePdf } from './downloadPdf';
 
 export function Preview() {
@@ -14,6 +15,7 @@ export function Preview() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showScoreModal, setShowScoreModal] = useState(false);
+  const [showJobTools, setShowJobTools] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -40,6 +42,16 @@ export function Preview() {
         >
           <Eye className="h-4 w-4 mr-1.5" />
           Preview
+        </Button>
+
+        <Button
+          variant="default"
+          size="sm"
+          onClick={() => setShowJobTools(true)}
+          className="bg-amber-500 hover:bg-amber-600 text-white font-semibold shadow shadow-amber-200 transition-all rounded-full px-4"
+        >
+          <Briefcase className="h-4 w-4 mr-1.5" />
+          Job Tools
         </Button>
 
         <Button
@@ -98,6 +110,10 @@ export function Preview() {
 
       {showScoreModal && (
         <ScoreModal data={data} onClose={() => setShowScoreModal(false)} />
+      )}
+
+      {showJobTools && (
+        <JobToolsModal data={data} onClose={() => setShowJobTools(false)} />
       )}
     </div>
   );
