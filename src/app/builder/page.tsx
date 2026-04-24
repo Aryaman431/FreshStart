@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { ResumeProvider, useResume } from '@/app/lib/resume-store';
+import { VersionProvider } from '@/app/lib/version-store';
 import { Editor } from '@/components/resume/editor/Editor';
 import { Preview } from '@/components/resume/preview/Preview';
 import { Button } from '@/components/ui/button';
@@ -132,51 +133,31 @@ function BuilderContent() {
       </nav>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex relative print:block print:static print:h-auto print:overflow-visible">
+      <main className="flex-1 flex relative overflow-hidden print:block print:static print:h-auto print:overflow-visible">
         {mounted ? (
-          <ResizablePanelGroup 
-            direction={isMobile ? "vertical" : "horizontal"} 
-            className="h-full w-full print:hidden"
-          >
+          <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"} className="h-full w-full print:hidden">
             {/* Editor Panel */}
-            <ResizablePanel 
-              defaultSize={isMobile ? 100 : 35} 
-              minSize={isMobile ? 0 : 25} 
-              maxSize={isMobile ? 100 : 70}
-            >
-              {/* THIS WRAPPER IS THE CULPRIT. `overflow-hidden` IS REMOVED. */}
+            <ResizablePanel defaultSize={isMobile ? 100 : 38} minSize={isMobile ? 0 : 25} maxSize={isMobile ? 100 : 60}>
               <div className="h-full border-r flex flex-col bg-slate-50/50">
                 <Editor />
               </div>
             </ResizablePanel>
 
-            {/* Slider Handle */}
             <ResizableHandle withHandle className="bg-slate-400 w-1.5" />
 
             {/* Preview Panel */}
-            <ResizablePanel 
-              defaultSize={isMobile ? 0 : 65} 
-              minSize={isMobile ? 0 : 30}
-              maxSize={isMobile ? 100 : 75}
-            >
-              <div className="overflow-auto h-full bg-slate-200/30">
-                <Preview />
-              </div>
+            <ResizablePanel defaultSize={isMobile ? 0 : 62} minSize={isMobile ? 0 : 30} maxSize={isMobile ? 100 : 75}>
+              <Preview />
             </ResizablePanel>
           </ResizablePanelGroup>
         ) : (
           <div className="flex-1 grid grid-cols-1 md:grid-cols-[400px_1fr] h-full print:hidden">
-            {/* THIS WRAPPER IS THE CULPRIT. `overflow-hidden` IS REMOVED. */}
             <div className="border-r flex flex-col bg-slate-50/50">
               <Editor />
             </div>
-            <div className="overflow-auto h-full bg-slate-200/30">
-              <Preview />
-            </div>
+            <Preview />
           </div>
         )}
-
-        {/* No separate print instance — window.print() prints the preview DOM directly */}
       </main>
     </div>
   );
@@ -185,7 +166,9 @@ function BuilderContent() {
 export default function BuilderPage() {
   return (
     <ResumeProvider>
-      <BuilderContent />
+      <VersionProvider>
+        <BuilderContent />
+      </VersionProvider>
     </ResumeProvider>
   );
 }

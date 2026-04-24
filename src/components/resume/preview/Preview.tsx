@@ -2,12 +2,13 @@
 
 import React, { useRef, useState } from 'react';
 import { useResume } from '@/app/lib/resume-store';
-import { Download, Loader2, Eye, BarChart2, Briefcase } from 'lucide-react';
+import { Download, Loader2, Eye, BarChart2, Briefcase, PanelRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ResumeContent } from './ResumeContent';
 import { PreviewModal } from './PreviewModal';
 import { ScoreModal } from './ScoreModal';
 import { JobToolsModal } from './JobToolsModal';
+import { ToolsPanel } from '../tools/ToolsPanel';
 import { downloadResumePdf } from './downloadPdf';
 
 export function Preview() {
@@ -16,6 +17,7 @@ export function Preview() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [showJobTools, setShowJobTools] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -33,14 +35,14 @@ export function Preview() {
   return (
     <div className="flex flex-col h-full bg-slate-100/50">
       {/* Controls Bar */}
-      <div className="p-3 border-b bg-white flex items-center justify-between gap-2 shrink-0 print:hidden z-10 shadow-sm">
+      <div className="px-3 py-2 border-b bg-white flex items-center gap-2 shrink-0 print:hidden z-10 shadow-sm flex-wrap">
         <Button
           variant="default"
           size="sm"
           onClick={() => setShowPreviewModal(true)}
-          className="bg-purple-300 hover:bg-purple-400 text-purple-900 font-semibold shadow shadow-purple-200 transition-all rounded-full px-4"
+          className="bg-purple-300 hover:bg-purple-400 text-purple-900 font-semibold shadow shadow-purple-200 transition-all rounded-full px-3 h-8 text-xs"
         >
-          <Eye className="h-4 w-4 mr-1.5" />
+          <Eye className="h-3.5 w-3.5 mr-1" />
           Preview
         </Button>
 
@@ -48,9 +50,9 @@ export function Preview() {
           variant="default"
           size="sm"
           onClick={() => setShowJobTools(true)}
-          className="bg-amber-500 hover:bg-amber-600 text-white font-semibold shadow shadow-amber-200 transition-all rounded-full px-4"
+          className="bg-amber-500 hover:bg-amber-600 text-white font-semibold shadow shadow-amber-200 transition-all rounded-full px-3 h-8 text-xs"
         >
-          <Briefcase className="h-4 w-4 mr-1.5" />
+          <Briefcase className="h-3.5 w-3.5 mr-1" />
           Job Tools
         </Button>
 
@@ -58,9 +60,9 @@ export function Preview() {
           variant="default"
           size="sm"
           onClick={() => setShowScoreModal(true)}
-          className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold shadow shadow-emerald-200 transition-all rounded-full px-4"
+          className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold shadow shadow-emerald-200 transition-all rounded-full px-3 h-8 text-xs"
         >
-          <BarChart2 className="h-4 w-4 mr-1.5" />
+          <BarChart2 className="h-3.5 w-3.5 mr-1" />
           Check Score
         </Button>
 
@@ -69,38 +71,64 @@ export function Preview() {
           size="sm"
           onClick={handleDownloadPDF}
           disabled={isDownloading}
-          className="bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 transition-all rounded-full px-4 min-w-[140px]"
+          className="bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 transition-all rounded-full px-3 h-8 text-xs min-w-[120px]"
         >
           {isDownloading ? (
-            <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" />Generating...</>
+            <><Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />Generating...</>
           ) : (
-            <><Download className="h-4 w-4 mr-1.5" />Download PDF</>
+            <><Download className="h-3.5 w-3.5 mr-1" />Download PDF</>
           )}
+        </Button>
+
+        {/* Tools panel toggle — rightmost */}
+        <Button
+          variant={toolsOpen ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setToolsOpen(o => !o)}
+          className={`ml-auto rounded-full px-3 h-8 text-xs font-semibold transition-all ${
+            toolsOpen
+              ? 'bg-slate-700 hover:bg-slate-800 text-white'
+              : 'border-slate-300 text-slate-600 hover:bg-slate-700 hover:text-white hover:border-slate-700'
+          }`}
+          title={toolsOpen ? 'Hide AI Tools' : 'Show AI Tools'}
+        >
+          <PanelRight className="h-3.5 w-3.5 mr-1" />
+          {toolsOpen ? 'Hide Tools' : 'AI Tools'}
         </Button>
       </div>
 
-      {/* Preview Scroll Area */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-auto"
-        style={{ background: '#d1d5db', padding: '40px 24px' }}
-      >
+      {/* Body: preview + optional tools drawer side by side */}
+      <div className="flex flex-1 min-h-0">
+        {/* Preview Scroll Area */}
         <div
-          ref={previewRef}
-          style={{
-            width: '800px',
-            minWidth: '800px',
-            maxWidth: '800px',
-            margin: '0 auto',
-            background: '#ffffff',
-            boxSizing: 'border-box',
-            boxShadow: '0 4px 32px 0 rgba(80,60,140,0.18)',
-            position: 'relative',
-            /* Snap content to A4 page multiples with a bottom gap */
-            paddingBottom: '60px',
-          }}
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto overflow-x-auto min-w-0"
+          style={{ background: '#d1d5db', padding: '32px 24px' }}
         >
-          <ResumeContent data={data} activeSection={activeSection} />
+          <div
+            ref={previewRef}
+            style={{
+              width: '800px',
+              minWidth: '800px',
+              margin: '0 auto',
+              background: '#ffffff',
+              boxSizing: 'border-box',
+              boxShadow: '0 4px 32px 0 rgba(80,60,140,0.18)',
+              paddingBottom: '60px',
+            }}
+          >
+            <ResumeContent data={data} activeSection={activeSection} />
+          </div>
+        </div>
+
+        {/* Tools drawer — slides in from the right, no overlap */}
+        <div
+          className="shrink-0 overflow-hidden transition-all duration-300 ease-in-out border-l border-slate-200 bg-white"
+          style={{ width: toolsOpen ? '280px' : '0px' }}
+        >
+          <div className="w-[280px] h-full overflow-y-auto">
+            <ToolsPanel />
+          </div>
         </div>
       </div>
 

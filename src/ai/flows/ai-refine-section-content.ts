@@ -19,8 +19,9 @@ const RefineSectionContentInputSchema = z.object({
 export type RefineSectionContentInput = z.infer<typeof RefineSectionContentInputSchema>;
 
 const RefineSectionContentOutputSchema = z.object({
-  refinedContent: z.string().describe('The elite, AI-refined version of the content.'),
-  improvements: z.array(z.string()).describe('List of sophisticated improvements made.'),
+  refinedContent: z.string().describe('Newline-joined bullet points from the points array.'),
+  improvements: z.array(z.string()).describe('List of changes made.'),
+  points: z.array(z.string()).describe('3–6 individual bullet points, each max 20 words.'),
 });
 export type RefineSectionContentOutput = z.infer<typeof RefineSectionContentOutputSchema>;
 
@@ -32,38 +33,50 @@ const refineSectionContentPrompt = ai.definePrompt({
   name: 'refineSectionContentPrompt',
   input: { schema: RefineSectionContentInputSchema },
   output: { schema: RefineSectionContentOutputSchema },
-  prompt: `You are a professional resume writing assistant. Convert the user's input into structured bullet points.
+  prompt: `You are a professional resume writing assistant. Generate content in the correct format for the given section.
 
-OUTPUT RULES (strict):
-- Return 3 to 5 bullet points only. No paragraphs, no prose.
-- Each bullet starts with a strong action verb.
-- Each bullet is 20 words or fewer.
-- Do NOT add fake metrics, percentages, or numbers unless they appear in the input.
-- Each bullet must be unique in structure and opening verb.
+SECTION: "{{sectionName}}"
 
-SECTION-SPECIFIC RULES for "{{sectionName}}":
-{{#if isExperience}}
-Focus on responsibilities, impact, and collaboration.
-Use verbs like: Developed, Led, Collaborated, Designed, Implemented, Supported, Managed.
-{{/if}}
-{{#if isProjects}}
-Focus on what was built, technologies used, and key features.
-Mention the tech stack naturally within the bullet.
-Use verbs like: Built, Implemented, Developed, Created, Integrated, Designed.
-{{/if}}
-{{#if isAchievements}}
-Focus on awards, recognitions, ranks, and certifications. Keep factual and concise.
-Use verbs like: Secured, Achieved, Ranked, Earned, Won, Completed.
-Do NOT start every bullet with a verb if the achievement is a noun (e.g. "1st place in...").
-{{/if}}
 {{#if isSummary}}
-Write 2-3 concise sentences summarising background, skills, and goal. Factual, no fluff.
+OUTPUT RULES FOR SUMMARY:
+- Return ONE paragraph only. No bullets, no dashes, no line breaks.
+- 2-3 sentences in professional tone.
+- Factual — do not invent details not present in the input.
+- Set "points" to an empty array.
+- Set "refinedContent" to the paragraph text.
 {{/if}}
 
-User input for "{{sectionName}}":
+{{#if isExperience}}
+OUTPUT RULES FOR EXPERIENCE:
+- Return 3-5 bullet points in the "points" array.
+- Each bullet starts with a past-tense action verb.
+- Each bullet is 20 words or fewer.
+- Focus on responsibilities, collaboration, and impact.
+- Do NOT add fake metrics or percentages.
+{{/if}}
+
+{{#if isProjects}}
+OUTPUT RULES FOR PROJECTS:
+- Return 3-5 bullet points in the "points" array.
+- Each bullet starts with an action verb.
+- Each bullet is 20 words or fewer.
+- Include features built and technologies used naturally.
+- Do NOT add fake metrics or percentages.
+{{/if}}
+
+{{#if isAchievements}}
+OUTPUT RULES FOR ACHIEVEMENTS:
+- Return 3-5 bullet points in the "points" array.
+- Concise and factual — only include what is in the input.
+- Focus on awards, ranks, recognitions, certifications.
+- Do NOT fabricate numbers or outcomes.
+{{/if}}
+
+User input:
 {{{sectionContent}}}
 
-Return bullet points only. List key changes in the improvements array.`,
+Set "refinedContent" to the points joined by newlines (or the paragraph for summary).
+List key changes in "improvements".`,
 });
 
 const refineSectionContentFlow = ai.defineFlow(
@@ -85,14 +98,15 @@ const refineSectionContentFlow = ai.defineFlow(
       isAchievements: input.sectionName === "Achievements & Awards",
     };
 
-    const { output } = await refineSectionContentPrompt({
-      ...input,
-      ...flags
-    });
+    const { output } = await refineSectionContentPrompt({ ...input, ...flags });
+    if (!output) throw new Error('AI prompt failure.');
 
-    if (!output) {
-      throw new Error('AI prompt failure.');
-    }
-    return output;
+    // Ensure refinedContent is always populated from points if not set
+    const points = output.points ?? [];
+    const isSummary = input.sectionName === "Professional Summary";
+    const refinedContent = output.refinedContent?.trim()
+      || (isSummary ? '' : points.map(p => `• ${p}`).join('\n'));
+
+    return { ...output, refinedContent, points };
   }
 );

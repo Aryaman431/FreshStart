@@ -92,7 +92,21 @@ export function AIReview({ sectionName, content, onAccept }: AIReviewProps) {
               </Button>
             </div>
           </div>
-          <p className="text-sm italic mb-3 text-foreground/80 leading-relaxed whitespace-pre-wrap">"{refinement.refinedContent}"</p>
+
+          {/* Summary: render as paragraph. All other sections: render as bullet list */}
+          {refinement.points && refinement.points.length > 0 ? (
+            <ul className="space-y-1.5 mb-3">
+              {refinement.points.map((point, idx) => (
+                <li key={idx} className="flex items-start gap-1.5 text-sm text-foreground/80 leading-relaxed">
+                  <span className="text-accent mt-0.5 shrink-0">•</span>
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm italic mb-3 text-foreground/80 leading-relaxed whitespace-pre-wrap">"{refinement.refinedContent}"</p>
+          )}
+
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Improvements:</p>
             <ul className="text-xs space-y-1">
