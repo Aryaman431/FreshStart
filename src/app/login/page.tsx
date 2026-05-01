@@ -23,9 +23,9 @@ export default function LoginPage() {
 
       <div className="flex-1 flex items-center justify-center p-6">
         <SignIn
-          routing="hash"
-          afterSignInUrl="/builder"
-          afterSignUpUrl="/builder"
+          path="/login"
+          routing="path"
+          forceRedirectUrl="/builder"
           appearance={{
             elements: {
               card: "shadow-none bg-transparent",

@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider afterSignInUrl="/builder" afterSignUpUrl="/builder">
+    <ClerkProvider signInForceRedirectUrl="/builder" signUpForceRedirectUrl="/builder">
     <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />

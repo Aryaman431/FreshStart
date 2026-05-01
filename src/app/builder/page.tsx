@@ -63,7 +63,7 @@ function BuilderContent() {
           ) : (
             <div className="flex items-center space-x-2">
               <SignInButton mode="modal">
-                <Button variant="outline" size="sm" className="font-bold border-white/40 text-white hover:bg-white/10 hover:text-white rounded-full px-5 h-9">
+                <Button variant="outline" size="sm" className="font-bold bg-white text-purple-700 border border-purple-400 hover:bg-purple-50 hover:text-purple-800 rounded-full px-5 h-9">
                   Sign In
                 </Button>
               </SignInButton>
