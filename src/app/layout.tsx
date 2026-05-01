@@ -1,6 +1,8 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { SupabaseAuthProvider } from '@/lib/use-supabase-auth';
+import { ClerkProvider } from '@clerk/nextjs';
 
 export const metadata: Metadata = {
   title: 'FreshStart | AI Resume Builder for Students',
@@ -18,6 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <ClerkProvider afterSignInUrl="/builder" afterSignUpUrl="/builder">
     <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -49,10 +52,13 @@ export default function RootLayout({
         `}</style>
       </head>
       <body className="font-body antialiased selection:bg-accent/30">
-        <FirebaseClientProvider>
-          {children}
-        </FirebaseClientProvider>
+        <SupabaseAuthProvider>
+          <FirebaseClientProvider>
+            {children}
+          </FirebaseClientProvider>
+        </SupabaseAuthProvider>
       </body>
     </html>
+    </ClerkProvider>
   );
 }

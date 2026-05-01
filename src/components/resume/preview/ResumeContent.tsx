@@ -229,7 +229,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
       {/* ══ HEADER ══════════════════════════════════════════════════════════ */}
       <div style={{ textAlign: "center", marginBottom: 14 }}>
         {/* Name: increased by 2 units (20px → 22px) */}
-        <div style={{ fontSize: "22px", fontWeight: 700, letterSpacing: "0.01em", lineHeight: 1.15, marginBottom: 8 }}>
+        <div style={{ fontSize: "22px", fontWeight: 400, letterSpacing: "0.01em", lineHeight: 1.15, marginBottom: 8 }}>
           {filled(p.fullName) ? p.fullName : <Ghost>{DUMMY.fullName}</Ghost>}
         </div>
         <div style={{

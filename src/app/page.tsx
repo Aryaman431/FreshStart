@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
+import { useUser, UserButton, SignInButton } from '@clerk/nextjs';
 
 const JOBS = [
   {
@@ -117,6 +118,7 @@ export default function LandingPage() {
   const [text, setText] = useState('');
   const [selectedJob, setSelectedJob] = useState<typeof JOBS[0] | null>(null);
   const [infoModal, setInfoModal] = useState<string | null>(null);
+  const { isSignedIn, isLoaded } = useUser();
   const staticPart = "Level Up Your ";
   const dynamicPart = "Resume in < 1 Min.";
   
@@ -155,9 +157,15 @@ export default function LandingPage() {
             <Link href="#success" className="hover:text-primary transition-colors">Success</Link>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" asChild className="font-bold text-muted-foreground hover:text-primary">
-              <Link href="/login">Login</Link>
-            </Button>
+            {!isLoaded ? null : !isSignedIn ? (
+              <SignInButton mode="modal">
+                <Button variant="ghost" className="font-bold text-muted-foreground hover:text-primary">
+                  Login
+                </Button>
+              </SignInButton>
+            ) : (
+              <UserButton />
+            )}
             <Button size="lg" asChild className="rounded-full px-8 bg-primary hover:bg-primary/90 text-white font-bold shadow-xl shadow-primary/20">
               <Link href="/builder">Build My Future</Link>
             </Button>

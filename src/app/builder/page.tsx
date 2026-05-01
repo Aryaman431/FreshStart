@@ -7,73 +7,25 @@ import { VersionProvider } from '@/app/lib/version-store';
 import { Editor } from '@/components/resume/editor/Editor';
 import { Preview } from '@/components/resume/preview/Preview';
 import { Button } from '@/components/ui/button';
-import { FileUser, LogOut, ArrowLeft, UserCircle, Loader2, MailWarning } from 'lucide-react';
+import { FileUser, ArrowLeft, UserCircle, Loader2 } from 'lucide-react';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
-import { useUser, useAuth } from '@/firebase';
-import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
-import { signOut, sendEmailVerification } from 'firebase/auth';
-import { AuthDialog } from '@/components/auth/AuthDialog';
-import { useToast } from '@/hooks/use-toast';
+import { signInAsGuest } from '@/lib/use-supabase-auth';
+import { useUser, UserButton, SignInButton } from '@clerk/nextjs';
 
 function BuilderContent() {
   const isMobile = useIsMobile();
   const [mounted, setMounted] = React.useState(false);
   const { isLoading: isDataLoading } = useResume();
-  const { user, isUserLoading } = useUser();
-  const auth = useAuth();
-  const { toast } = useToast();
+  const { isSignedIn, user: clerkUser, isLoaded } = useUser();
 
-  // Prevent hydration mismatch
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
+  React.useEffect(() => { setMounted(true); }, []);
 
-  const handleSignOut = () => {
-    signOut(auth);
-  };
-
-  const handleQuickStart = () => {
-    initiateAnonymousSignIn(auth);
-  };
-
-  const handleResendVerification = async () => {
-    if (user && !user.emailVerified) {
-      try {
-        await sendEmailVerification(user);
-        toast({
-          title: "Verification Sent",
-          description: "Check your Gmail inbox for the new link.",
-        });
-      } catch (e: any) {
-        toast({
-          variant: "destructive",
-          title: "Limit Reached",
-          description: "Please wait a moment before requesting another link.",
-        });
-      }
-    }
-  };
+  const handleQuickStart = () => signInAsGuest();
 
   return (
     <div className="flex flex-col h-screen bg-background print:h-auto print:overflow-visible geometric-pattern">
-      {/* Verification Warning Strip */}
-      {user && !user.isAnonymous && !user.emailVerified && (
-        <div className="bg-amber-100 border-b border-amber-200 px-6 py-2 flex items-center justify-between text-xs font-bold text-amber-800 shrink-0">
-          <div className="flex items-center">
-            <MailWarning className="h-4 w-4 mr-2" />
-            <span>Your email is not verified. Some features may be limited.</span>
-          </div>
-          <button 
-            onClick={handleResendVerification}
-            className="y hover:text-amber-900 transition-colors"
-          >
-            Resend Verification Link
-          </button>
-        </div>
-      )}
-
       {/* Navigation Bar */}
       <nav className="h-16 border-b bg-slate-400/95 backdrop-blur-md px-6 flex items-center justify-between z-20 shrink-0 print:hidden geometric-pattern shadow-lg">
         <div className="flex items-center space-x-3">
@@ -96,33 +48,30 @@ function BuilderContent() {
             </Link>
           </Button>
           
-          {isUserLoading || isDataLoading ? (
+          {!isLoaded || isDataLoading ? (
             <div className="flex items-center px-4">
               <Loader2 className="h-5 w-5 animate-spin text-white" />
             </div>
-          ) : user ? (
-            <div className="flex items-center space-x-2">
+          ) : isSignedIn ? (
+            <div className="flex items-center space-x-3">
               <div className="flex flex-col items-center text-purple-700 font-bold px-3 py-1 rounded">
                 <span className="text-[10px] uppercase tracking-wider">Logged In as</span>
-                <span className="text-xs">{user.isAnonymous ? 'Guest' : user.email}</span>
+                <span className="text-xs">{clerkUser?.primaryEmailAddress?.emailAddress ?? clerkUser?.username ?? 'User'}</span>
               </div>
-              <Button 
-                variant="default" 
-                size="sm" 
-                onClick={handleSignOut}
-                className="bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 transition-all rounded-full px-6 h-9">
-                <LogOut className="h-4 w-4 mr-2" />
-                <span className="inline">Sign Out</span>
-              </Button>
+              <UserButton />
             </div>
           ) : (
             <div className="flex items-center space-x-2">
-              <AuthDialog />
-              <Button 
-                variant="default" 
-                size="sm" 
+              <SignInButton mode="modal">
+                <Button variant="outline" size="sm" className="font-bold border-white/40 text-white hover:bg-white/10 hover:text-white rounded-full px-5 h-9">
+                  Sign In
+                </Button>
+              </SignInButton>
+              <Button
+                variant="default"
+                size="sm"
                 onClick={handleQuickStart}
-                className="bg-primary hover:bg-primary/90 text-white font-bold h-9 shadow-lg shadow-primary/20 border border-white/20"
+                className="bg-primary hover:bg-primary/90 text-white font-bold h-9 shadow-lg shadow-primary/20 border border-white/20 rounded-full px-5"
               >
                 <UserCircle className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Quick Start</span>
