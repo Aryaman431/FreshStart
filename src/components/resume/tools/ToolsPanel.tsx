@@ -118,13 +118,14 @@ function MatchTab() {
 
 // ─── Feature 2: Tailor to Job ─────────────────────────────────────────────────
 function TailorTab() {
-  const { data } = useResume();
+  const { data, updateData } = useResume();
   const [jd, setJd] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TailorOutput | null>(null);
   const [error, setError] = useState('');
   const [openIdx, setOpenIdx] = useState<number | null>(null);
   const [copied, setCopied] = useState<number | null>(null);
+  const [added, setAdded] = useState<number | null>(null);
 
   const run = async () => {
     if (!jd.trim()) return;
@@ -144,6 +145,26 @@ function TailorTab() {
     setTimeout(() => setCopied(null), 1500);
   };
 
+  const handleAdd = (text: string, idx: number) => {
+    updateData({
+      ...data,
+      experience: [
+        ...data.experience,
+        { id: String(Date.now()), role: '', company: '', startDate: '', endDate: '', responsibilities: text },
+      ],
+    });
+    setAdded(idx);
+    setTimeout(() => setAdded(null), 1500);
+  };
+
+  // ATS summary → bullet points
+  const atsBullets = result
+    ? result.summary
+        .split(/[\n•.\-]+/)
+        .map(p => p.trim())
+        .filter(Boolean)
+    : [];
+
   return (
     <div className="space-y-4">
       <JDInput value={jd} onChange={setJd} />
@@ -155,17 +176,31 @@ function TailorTab() {
 
       {result && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 p-4 flex items-center justify-between hover:scale-[1.01]">
             <span className="text-xs font-semibold text-slate-600">Current Fit</span>
             <span className={`text-xl font-black ${result.overallFit >= 70 ? 'text-emerald-600' : result.overallFit >= 45 ? 'text-amber-600' : 'text-red-600'}`}>
               {result.overallFit}<span className="text-xs font-normal text-slate-400">/100</span>
             </span>
           </div>
-          <p className="text-xs text-slate-600 leading-relaxed">{result.summary}</p>
+
+          {/* ATS summary as bullet points */}
+          {atsBullets.length > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-1.5">
+              <p className="text-sm font-semibold text-gray-700 mb-3">ATS Analysis</p>
+              <ul className="space-y-1">
+                {atsBullets.map((point, i) => (
+                  <li key={i} className="flex items-start gap-1.5 text-xs text-slate-600 leading-relaxed">
+                    <span className="text-primary mt-0.5 shrink-0">•</span>
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {result.missingSkills.length > 0 && (
-            <div className="space-y-1.5">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-red-500">Add These Skills</p>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-1.5">
+              <p className="text-sm font-semibold text-gray-700 mb-3">Add These Skills</p>
               <div className="flex flex-wrap gap-1.5">
                 {result.missingSkills.map((s, i) => (
                   <span key={i} className="text-[11px] px-2 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded-full">{s}</span>
@@ -175,10 +210,10 @@ function TailorTab() {
           )}
 
           {result.improvedBullets.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Suggested Rewrites</p>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-2">
+              <p className="text-sm font-semibold text-gray-700 mb-3">Suggested Rewrites</p>
               {result.improvedBullets.map((b, i) => (
-                <div key={i} className="rounded-xl border border-slate-200 overflow-hidden text-xs">
+                <div key={i} className="rounded-xl border border-slate-200 overflow-hidden hover:shadow-md transition-all duration-200 text-xs">
                   <button
                     className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-slate-50 font-medium text-slate-700"
                     onClick={() => setOpenIdx(openIdx === i ? null : i)}
@@ -198,10 +233,16 @@ function TailorTab() {
                       </div>
                       <div className="flex items-center justify-between">
                         <p className="text-[10px] text-slate-400 italic">{b.reason}</p>
-                        <button onClick={() => copyBullet(b.improved, i)} className="flex items-center gap-1 text-[10px] text-primary hover:underline">
-                          {copied === i ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                          {copied === i ? 'Copied' : 'Copy'}
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => copyBullet(b.improved, i)} className="flex items-center gap-1 text-[10px] text-primary hover:underline">
+                            {copied === i ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                            {copied === i ? 'Copied' : 'Copy'}
+                          </button>
+                          <button onClick={() => handleAdd(b.improved, i)} className="flex items-center gap-1 text-[10px] text-emerald-600 hover:underline font-semibold">
+                            {added === i ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                            {added === i ? 'Added!' : 'Add to Resume'}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -211,8 +252,8 @@ function TailorTab() {
           )}
 
           {result.sectionOrder.length > 0 && (
-            <div className="space-y-1.5">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Recommended Order</p>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-1.5">
+              <p className="text-sm font-semibold text-gray-700 mb-3">Recommended Order</p>
               <div className="flex flex-wrap gap-1 items-center">
                 {result.sectionOrder.map((s, i) => (
                   <React.Fragment key={i}>

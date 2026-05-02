@@ -49,6 +49,8 @@ export async function downloadResumePdf(data: ResumeData): Promise<void> {
   const totalH = rootRect.height;
   const scale = 3;
 
+  await new Promise(resolve => requestAnimationFrame(resolve));
+
   const canvas = await html2canvas(element, {
     scale,
     useCORS: true,
@@ -56,8 +58,8 @@ export async function downloadResumePdf(data: ResumeData): Promise<void> {
     backgroundColor: '#ffffff',
     width: RESUME_WIDTH_PX,
     height: totalH,
-    windowWidth: 1600,
-    windowHeight: totalH,
+    windowWidth: element.scrollWidth,
+    windowHeight: element.scrollHeight,
     scrollX: 0,
     scrollY: 0,
     x: 0,
@@ -71,6 +73,23 @@ export async function downloadResumePdf(data: ResumeData): Promise<void> {
         a.style.textUnderlineOffset = '4px';
         a.style.textDecorationThickness = '1px';
         a.style.textDecoration = 'underline';
+      });
+
+      // ── Section heading: match preview rendering exactly ─────────────────
+      clonedEl.querySelectorAll<HTMLElement>('[data-section-title]').forEach(el => {
+        el.style.paddingBottom = '2px';
+        el.style.marginBottom = '0';
+        el.style.borderBottom = '1px solid #000';
+      });
+      // ── Section body: zero top margin, zero first-child top margin ────────
+      clonedEl.querySelectorAll<HTMLElement>('[data-section-body]').forEach(el => {
+        el.style.marginTop = '0';
+        el.style.paddingTop = '0';
+        const first = el.firstElementChild as HTMLElement | null;
+        if (first) {
+          first.style.marginTop = '0';
+          first.style.paddingTop = '0';
+        }
       });
     },
   });

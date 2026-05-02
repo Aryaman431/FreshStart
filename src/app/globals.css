@@ -11,6 +11,15 @@
   cursor: pointer !important;
 }
 
+/* ── Section content: controlled gap between divider and first content row ── */
+[data-section-body] {
+  margin-top: 0;
+  padding-top: 0;
+}
+[data-section-body] > * {
+  margin-top: 0;
+}
+
 /* ── A4 page-break visual guide ─────────────────────────────────────────────
    Shows a dashed line at every 1131px (A4 height at 800px width) so the user
    can see where page breaks will occur. Only visible in screen preview.
