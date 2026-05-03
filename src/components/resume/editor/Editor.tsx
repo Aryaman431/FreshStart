@@ -371,7 +371,9 @@ export function Editor() {
           {/* ── PROJECTS ── */}
           <SectionCard id="projects" title="Key Projects" icon={<Star className="h-4 w-4" />}>
             <div className="space-y-6">
-              {data.projects.map((proj, idx) => (
+              {data.projects.map((proj, idx) => {
+                const dateError = isEndDateBeforeStartDate(proj.startDate || '', proj.endDate || '');
+                return (
                 <div key={proj.id} className="space-y-4 p-4 border rounded-lg bg-muted/30">
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-bold uppercase text-muted-foreground">Project {idx + 1}</span>
@@ -413,6 +415,7 @@ export function Editor() {
                           <MonthYearPicker value={proj.endDate || ''} onFocus={() => focusAndScroll('projects')} allowPresent
                             onChange={(val) => { const l = [...data.projects]; l[idx].endDate = val; updateData({ projects: l }); }} />
                         </div>
+                        {dateError && <p className="text-xs text-destructive">End date cannot be before start date.</p>}
                       </div>
                     </div>
                   </div>
@@ -429,7 +432,8 @@ export function Editor() {
                       onAccept={(val) => { const l = [...data.projects]; l[idx].description = val; updateData({ projects: l }); }} />
                   </div>
                 </div>
-              ))}
+                );
+              })}
               <Button variant="outline" size="sm" onClick={addProject} className="w-full">
                 <Plus className="mr-2 h-4 w-4" /> Add Another Project
               </Button>
@@ -482,19 +486,7 @@ export function Editor() {
               </Button>
             </div>
           </SectionCard>
-            {/* ── ACHIEVEMENTS ── */}
-          <SectionCard id="achievements" title="Achievements & Awards" icon={<Award className="h-4 w-4" />}>
-            <div className="space-y-2">
-              <Label>List your achievements (one per line)</Label>
-              <Textarea
-                value={data.achievements}
-                onFocus={() => focusAndScroll('achievements')}
-                onChange={(e) => updateData({ achievements: e.target.value })}
-                placeholder="• Won 1st place in National Hackathon..."
-                className="min-h-[100px]"
-              />
-            </div>
-          </SectionCard>
+           
           {/* ── CERTIFICATIONS ── */}
           <SectionCard id="certifications" title="Certifications" icon={<Award className="h-4 w-4" />}>
             <div className="space-y-6">
@@ -522,7 +514,7 @@ export function Editor() {
                         placeholder="Amazon Web Services" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Year / Date</Label>
+                      <Label>Month / Year</Label>
                       <MonthYearPicker value={cert.year} onFocus={() => focusAndScroll('certifications')}
                         onChange={(val) => { const l = [...data.certifications]; l[idx].year = val; updateData({ certifications: l }); }} />
                     </div>
@@ -532,6 +524,19 @@ export function Editor() {
               <Button variant="outline" size="sm" onClick={addCertification} className="w-full">
                 <Plus className="mr-2 h-4 w-4" /> Add Another Certification
               </Button>
+            </div>
+          </SectionCard>
+           {/* ── ACHIEVEMENTS ── */}
+          <SectionCard id="achievements" title="Achievements & Awards" icon={<Award className="h-4 w-4" />}>
+            <div className="space-y-2">
+              <Label>List your achievements (one per line)</Label>
+              <Textarea
+                value={data.achievements}
+                onFocus={() => focusAndScroll('achievements')}
+                onChange={(e) => updateData({ achievements: e.target.value })}
+                placeholder="• Won 1st place in National Hackathon..."
+                className="min-h-[100px]"
+              />
             </div>
           </SectionCard>
 

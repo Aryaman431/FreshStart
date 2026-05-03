@@ -71,7 +71,7 @@ export function MonthYearPicker({ value, onChange, onFocus, allowPresent = false
 
   return (
     <div className="flex gap-2" onFocus={onFocus}>
-      <NativeSelect value={isPresent ? 'Present' : month} onChange={handleMonthChange} className="flex-1">
+      <NativeSelect value={isPresent ? 'Present' : month} onChange={handleMonthChange} className="min-w-[140px] flex-1">
         <option value="" disabled>Month</option>
         {allowPresent && <option value="Present">Present</option>}
         {MONTHS.map((m) => (
@@ -79,7 +79,7 @@ export function MonthYearPicker({ value, onChange, onFocus, allowPresent = false
         ))}
       </NativeSelect>
 
-      <NativeSelect value={year} onChange={handleYearChange} disabled={isPresent} className="w-[110px]">
+      <NativeSelect value={year} onChange={handleYearChange} disabled={isPresent} className="w-[110px] shrink-0">
         <option value="" disabled>{isPresent ? 'Present' : 'Year'}</option>
         {years.map((y) => (
           <option key={y} value={y}>{y}</option>
