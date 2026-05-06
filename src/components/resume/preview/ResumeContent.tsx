@@ -100,22 +100,24 @@ function Ghost({ children }: { children: React.ReactNode }) {
 
 function Section({ title }: { title: string }) {
   return (
-    <div style={{ marginTop: 22, marginBottom: 4, breakAfter: "avoid", pageBreakAfter: "avoid" }}>
-      <div
-        data-section-title
-        style={{
-          fontFamily: FONT,
-          fontSize: "12px",
-          fontWeight: 700,
-          textTransform: "uppercase",
-          letterSpacing: "0.04em",
-          color: "#000",
-          borderBottom: "1px solid #000",
-          paddingBottom: "3px",
-          marginBottom: 0,
-        }}
-      >
-        {title}
+    <div style={{ marginTop: 0, marginBottom: 0, breakAfter: "avoid", pageBreakAfter: "avoid" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+        <div
+          data-section-title
+          style={{
+            fontFamily: FONT,
+            fontSize: "12px",
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+            color: "#000",
+            paddingBottom: "8px",
+            marginBottom: 0,
+          }}
+        >
+          {title}
+        </div>
+        <div style={{ borderBottom: "1px solid #000", marginBottom: 0 }} />
       </div>
     </div>
   );
@@ -279,7 +281,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
 
       {/* ══ SUMMARY (conditional) ═══════════════════════════════════════════ */}
       {filled(data.professionalSummary) && (
-        <div data-section>
+        <div data-section style={{ paddingTop: 14 }}>
           <Section title="Summary" />
           <div data-section-body style={{ lineHeight: 1.3, marginBottom: 2, marginTop: 0, paddingTop: 0 }}>
             {data.professionalSummary}
@@ -288,7 +290,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
       )}
 
       {/* ══ EDUCATION ═══════════════════════════════════════════════════════ */}
-      <div data-section>
+      <div data-section style={{ paddingTop: 14 }}>
         <Section title="Education" />
         <div data-section-body style={{ marginTop: 0, paddingTop: 0 }}>
           {(eduList as typeof DUMMY.education).map((edu) => (
@@ -314,7 +316,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
       </div>
 
       {/* ══ EXPERIENCE ══════════════════════════════════════════════════════ */}
-      <div data-section>
+      <div data-section style={{ paddingTop: 14 }}>
         <Section title="Experience" />
         <div data-section-body style={{ marginTop: 0, paddingTop: 0 }}>
           {(expList as typeof DUMMY.experience).map((exp) => (
@@ -333,7 +335,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
 
       {/* ══ PROJECTS (optional) ═════════════════════════════════════════════ */}
       {hasProj && (
-        <div data-section>
+        <div data-section style={{ paddingTop: 14 }}>
           <Section title="Projects" />
           <div data-section-body style={{ marginTop: 0, paddingTop: 0 }}>
             {data.projects.map((proj) => (
@@ -369,7 +371,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
       )}
 
       {/* ══ TECHNICAL SKILLS ════════════════════════════════════════════════ */}
-      <div data-section>
+      <div data-section style={{ paddingTop: 14 }}>
         <Section title="Skills" />
         <div data-section-body style={{ lineHeight: 1.4, marginTop: 0, paddingTop: 0 }}>
           {skillList.map((row, i) => {
@@ -390,7 +392,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
 
       {/* ══ CERTIFICATIONS (conditional) — swapped before Achievements ══════ */}
       {data.certifications.some(c => filled(c.name)) && (
-        <div data-section>
+        <div data-section style={{ paddingTop: 14 }}>
           <Section title="Certifications" />
           <div data-section-body style={{ marginTop: 0, paddingTop: 0 }}>
             {data.certifications.filter(c => filled(c.name)).map((cert) => (
@@ -405,7 +407,7 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
 
       {/* ══ ACHIEVEMENTS (conditional) — swapped after Certifications ════════ */}
       {filled(data.achievements) && (
-        <div data-section>
+        <div data-section style={{ paddingTop: 14 }}>
           <Section title="Achievements &amp; Awards" />
           <div data-section-body style={{ marginTop: 0, paddingTop: 0 }}>
             <Bullets text={data.achievements} />
