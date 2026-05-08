@@ -6,12 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { User, FileText, GraduationCap, Code, Briefcase, Award, Plus, Trash2, ListChecks, Star, RefreshCcw } from 'lucide-react';
+import { User, FileText, GraduationCap, Code, Briefcase, Award, Plus, Trash2, ListChecks, Star, RefreshCcw, Upload, Loader2 } from 'lucide-react';
 import { useResume } from '@/app/lib/resume-store';
 import { SectionCard } from './SectionCard';
 import { AIReview } from '../AIReview';
 import { MonthYearPicker } from './MonthYearPicker';
 import { BulletImprover } from './BulletImprover';
+import { useToast } from '@/hooks/use-toast';
 
 
 // Common country codes
@@ -34,10 +35,60 @@ const COUNTRY_CODES = [
 
 export function Editor() {
   const [emailError, setEmailError] = React.useState('');
+  const [uploading, setUploading] = React.useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { data, updateData, resetData, setActiveSection, activeSection } = useResume();
+  const { toast } = useToast();
   const editorRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [scrollTrigger, setScrollTrigger] = React.useState(0);
+
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!fileInputRef.current) return;
+    fileInputRef.current.value = '';
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      toast({ title: 'PDF only', description: 'Please upload a PDF resume.', variant: 'destructive' });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+
+      const res = await fetch('http://localhost:8000/parse-resume', {
+        method: 'POST',
+        body: form,
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: 'Unknown error' }));
+        throw new Error(err.detail || `Server error ${res.status}`);
+      }
+
+      const parsed = await res.json();
+
+      // Merge parsed data — add UUIDs if missing
+      const withIds = {
+        ...parsed,
+        education:      (parsed.education      || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID() })),
+        experience:     (parsed.experience     || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID() })),
+        projects:       (parsed.projects       || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID() })),
+        skills:         (parsed.skills         || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID() })),
+        certifications: (parsed.certifications || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID() })),
+      };
+
+      updateData(withIds);
+      toast({ title: '✓ Resume imported', description: 'Your details have been filled in. Review and edit as needed.' });
+    } catch (err: any) {
+      toast({ title: 'Import failed', description: err.message || 'Could not parse the resume.', variant: 'destructive' });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const focusAndScroll = (sectionId: string | undefined) => {
     if (!sectionId) return;
@@ -143,9 +194,32 @@ export function Editor() {
           </h2>
           <p className="text-sm text-muted-foreground mt-1">Guide for Freshers &amp; Students</p>
         </div>
-        <Button variant="ghost" size="icon" onClick={resetData} title="Clear all data" className="text-muted-foreground hover:text-destructive">
-          <RefreshCcw className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf"
+            className="hidden"
+            onChange={handleResumeUpload}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            title="Import existing resume PDF"
+            className="gap-1.5 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/5"
+          >
+            {uploading
+              ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Importing…</>
+              : <><Upload className="h-3.5 w-3.5" />Import PDF</>
+            }
+          </Button>
+          <Button variant="ghost" size="icon" onClick={resetData} title="Clear all data" className="text-muted-foreground hover:text-destructive">
+            <RefreshCcw className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       <div ref={editorRef} className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">

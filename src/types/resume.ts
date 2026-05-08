@@ -84,7 +84,7 @@ export const initialResumeData: ResumeData = {
   education: [{ id: '1', degree: '', institution: '', startDate: '', endDate: '', coursework: '' }],
   skills: [{ id: '1', category: 'Languages', values: '' }],
   projects: [{ id: '1', title: '', description: '', techStack: '', link: '', date: '', startDate: '', endDate: '' }],
-  experience: [{ id: '1', company: '', role: '', startDate: '', endDate: '', responsibilities: '' }],
+  experience: [],
   certifications: [{ id: '1', name: '', issuer: '', year: '' }],
   achievements: '',
   extracurriculars: '',

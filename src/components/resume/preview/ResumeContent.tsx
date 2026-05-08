@@ -100,7 +100,7 @@ function Ghost({ children }: { children: React.ReactNode }) {
 
 function Section({ title }: { title: string }) {
   return (
-    <div style={{ marginTop: 0, marginBottom: 0, breakAfter: "avoid", pageBreakAfter: "avoid" }}>
+    <div style={{ marginTop: 0, marginBottom: 0 , breakAfter: "avoid", pageBreakAfter: "avoid" }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
         <div
           data-section-title
@@ -315,23 +315,21 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
         </div>
       </div>
 
-      {/* ══ EXPERIENCE ══════════════════════════════════════════════════════ */}
-      <div data-section style={{ paddingTop: 14 }}>
-        <Section title="Experience" />
-        <div data-section-body style={{ marginTop: 0, paddingTop: 0 }}>
-          {(expList as typeof DUMMY.experience).map((exp) => (
-            <div key={exp.id} style={{ marginBottom: 5 }}>
-              <Row
-                bold
-                left={!hasExp ? <Ghost>{exp.role}</Ghost> : exp.role}
-                right={!hasExp ? <Ghost>{dateRange(exp.startDate, exp.endDate)}</Ghost> : dateRange(exp.startDate, exp.endDate)}
-              />
-              <Row italic left={!hasExp ? <Ghost>{exp.company}</Ghost> : exp.company} />
-              <Bullets text={exp.responsibilities} ghost={!hasExp} />
-            </div>
-          ))}
+      {/* ══ EXPERIENCE (optional) ══════════════════════════════════════════ */}
+      {hasExp && (
+        <div data-section style={{ paddingTop: 14 }}>
+          <Section title="Experience" />
+          <div data-section-body style={{ marginTop: 0, paddingTop: 0 }}>
+            {data.experience.map((exp) => (
+              <div key={exp.id} style={{ marginBottom: 5 }}>
+                <Row bold left={exp.role} right={dateRange(exp.startDate, exp.endDate)} />
+                <Row italic left={exp.company} />
+                <Bullets text={exp.responsibilities} />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ══ PROJECTS (optional) ═════════════════════════════════════════════ */}
       {hasProj && (
