@@ -15,9 +15,10 @@ import { resumeToText } from '@/lib/resume-to-text';
 import { matchKeywords, KeywordMatchResult } from '@/lib/keyword-match';
 import { tailorToJob, TailorOutput } from '@/ai/flows/ai-tailor-to-job';
 import { generateCoverLetter, CoverLetterOutput } from '@/ai/flows/ai-cover-letter';
+import { useUser, SignInButton } from '@clerk/nextjs';
 
 // ─── Tab types ────────────────────────────────────────────────────────────────
-type Tab = 'match' | 'tailor' | 'versions' | 'cover';
+type Tab = 'match' | 'tailor' | 'cover';
 
 // ─── Shared JD input ─────────────────────────────────────────────────────────
 function JDInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
@@ -270,23 +271,47 @@ function TailorTab() {
   );
 }
 
-// ─── Feature 4: Versioning ────────────────────────────────────────────────────
-function VersionsTab() {
+// ─── Versions Panel (standalone, used in modal) ───────────────────────────────
+export function VersionsPanel() {
   const { data, updateData } = useResume();
   const { versions, saveVersion, deleteVersion, renameVersion } = useVersions();
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
 
+  const hasData = !!(
+    data.personalInfo?.fullName ||
+    data.professionalSummary ||
+    (data.experience?.length ?? 0) > 0 ||
+    (data.projects?.length ?? 0) > 0 ||
+    data.education?.some(e => e.institution || e.degree)
+  );
+
+  const nextDraftName = () => {
+    const drafts = versions.filter(v => /^Draft \d+$/.test(v.name));
+    return `Draft ${drafts.length + 1}`;
+  };
+
+  const saveCurrentAsDraft = () => {
+    if (!hasData) return;
+    saveVersion(nextDraftName(), data);
+  };
+
   const handleSave = () => {
-    saveVersion(newName || `Version ${new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}`, data);
+    saveVersion(newName.trim() || `Version ${new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}`, data);
     setNewName('');
   };
 
   const handleLoad = (v: typeof versions[0]) => {
-    if (window.confirm(`Load "${v.name}"? Unsaved changes will be lost.`)) {
-      updateData(v.data);
-    }
+    if (!window.confirm(`Load "${v.name}"? Your current resume will be saved as a draft first.`)) return;
+    saveCurrentAsDraft();
+    updateData(v.data);
+  };
+
+  const handleRename = (id: string, currentName: string) => {
+    const newTitle = window.prompt('Rename version:', currentName);
+    if (!newTitle?.trim()) return;
+    renameVersion(id, newTitle.trim());
   };
 
   return (
@@ -297,6 +322,7 @@ function VersionsTab() {
           onChange={e => setNewName(e.target.value)}
           placeholder="Version name (optional)"
           className="h-8 text-xs flex-1"
+          onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
         />
         <Button size="sm" onClick={handleSave} className="h-8 gap-1 shrink-0">
           <Plus className="h-3.5 w-3.5" /> Save
@@ -304,45 +330,47 @@ function VersionsTab() {
       </div>
 
       {versions.length === 0 && (
-        <p className="text-xs text-slate-400 text-center py-6">No saved versions yet.</p>
+        <p className="text-xs text-slate-400 text-center py-8">No saved versions yet.</p>
       )}
 
       <div className="space-y-2">
         {versions.map(v => (
-          <div key={v.id} className="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 hover:border-primary/30 transition-colors group">
-            <div className="flex-1 min-w-0">
-              {editingId === v.id ? (
-                <Input
-                  value={editName}
-                  onChange={e => setEditName(e.target.value)}
-                  onBlur={() => { renameVersion(v.id, editName); setEditingId(null); }}
-                  onKeyDown={e => { if (e.key === 'Enter') { renameVersion(v.id, editName); setEditingId(null); } }}
-                  className="h-6 text-xs"
-                  autoFocus
-                />
-              ) : (
-                <button
-                  className="text-xs font-semibold text-slate-700 truncate block w-full text-left hover:text-primary"
-                  onDoubleClick={() => { setEditingId(v.id); setEditName(v.name); }}
-                  title="Double-click to rename"
-                >
-                  {v.name}
-                </button>
-              )}
-              <div className="flex items-center gap-1 mt-0.5">
-                <Clock className="h-2.5 w-2.5 text-slate-300" />
-                <span className="text-[10px] text-slate-400">
-                  {new Date(v.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}
-                </span>
+          <div key={v.id} className="rounded-xl border border-slate-200 bg-white shadow-sm p-3 hover:border-primary/30 transition-colors group">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                {editingId === v.id ? (
+                  <Input
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    onBlur={() => { renameVersion(v.id, editName); setEditingId(null); }}
+                    onKeyDown={e => { if (e.key === 'Enter') { renameVersion(v.id, editName); setEditingId(null); } }}
+                    className="h-6 text-xs mb-1"
+                    autoFocus
+                  />
+                ) : (
+                  <p className="text-xs font-semibold text-slate-800 truncate">{v.name}</p>
+                )}
+                <div className="flex items-center gap-1 mt-0.5">
+                  <Clock className="h-2.5 w-2.5 text-slate-300" />
+                  <span className="text-[10px] text-slate-400">
+                    {new Date(v.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-primary" onClick={() => handleLoad(v)}>
-                Load
-              </Button>
-              <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive" onClick={() => deleteVersion(v.id)}>
-                <Trash2 className="h-3 w-3" />
-              </Button>
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={() => handleRename(v.id, v.name)}
+                  className="text-xs text-purple-600 hover:text-purple-800 transition-colors px-1"
+                >
+                  Rename
+                </button>
+                <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-primary" onClick={() => handleLoad(v)}>
+                  Load
+                </Button>
+                <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive" onClick={() => deleteVersion(v.id)}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           </div>
         ))}
@@ -351,7 +379,67 @@ function VersionsTab() {
   );
 }
 
-// ─── Feature 5: Cover Letter ──────────────────────────────────────────────────
+// ─── Auth gate ────────────────────────────────────────────────────────────────
+function AuthGate() {
+  return (
+    <div className="flex-1 flex items-center justify-center p-6">
+      <div className="rounded-2xl border bg-white p-6 text-center shadow-sm w-full max-w-xs">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center mx-auto mb-4">
+          <Target className="h-6 w-6 text-purple-600" />
+        </div>
+        <div className="text-base font-semibold text-gray-800">Sign in to use AI Tools</div>
+        <div className="mt-2 text-sm text-gray-500 leading-relaxed">
+          ATS scoring, Tailor to Job, AI writing, and more.
+        </div>
+        <SignInButton mode="modal">
+          <button className="mt-5 px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium hover:scale-[1.02] transition-all shadow-md shadow-purple-200 w-full">
+            Sign In
+          </button>
+        </SignInButton>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Panel ───────────────────────────────────────────────────────────────
+const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  { id: 'match',  label: 'Match',  icon: <Target className="h-3.5 w-3.5" /> },
+  { id: 'tailor', label: 'Tailor', icon: <Briefcase className="h-3.5 w-3.5" /> },
+  { id: 'cover',  label: 'Cover',  icon: <FileText className="h-3.5 w-3.5" /> },
+];
+
+export function ToolsPanel() {
+  const [tab, setTab] = useState<Tab>('match');
+  const { isSignedIn, isLoaded } = useUser();
+
+  return (
+    <div className="flex flex-col h-full bg-white border-l">
+      <div className="flex border-b shrink-0">
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold transition-colors
+              ${tab === t.id ? 'text-primary border-b-2 border-primary' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            {t.icon}
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {isLoaded && !isSignedIn ? (
+        <AuthGate />
+      ) : (
+        <div className="flex-1 overflow-y-auto p-4">
+          {tab === 'match'  && <MatchTab />}
+          {tab === 'tailor' && <TailorTab />}
+          {tab === 'cover'  && <CoverTab />}
+        </div>
+      )}
+    </div>
+  );
+}
 function CoverTab() {
   const { data } = useResume();
   const [jd, setJd] = useState('');
@@ -409,41 +497,3 @@ function CoverTab() {
   );
 }
 
-// ─── Main Panel ───────────────────────────────────────────────────────────────
-const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: 'match',    label: 'Match',    icon: <Target className="h-3.5 w-3.5" /> },
-  { id: 'tailor',   label: 'Tailor',   icon: <Briefcase className="h-3.5 w-3.5" /> },
-  { id: 'versions', label: 'Versions', icon: <History className="h-3.5 w-3.5" /> },
-  { id: 'cover',    label: 'Cover',    icon: <FileText className="h-3.5 w-3.5" /> },
-];
-
-export function ToolsPanel() {
-  const [tab, setTab] = useState<Tab>('match');
-
-  return (
-    <div className="flex flex-col h-full bg-white border-l">
-      {/* Tab bar */}
-      <div className="flex border-b shrink-0">
-        {TABS.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold transition-colors
-              ${tab === t.id ? 'text-primary border-b-2 border-primary' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            {t.icon}
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
-      <div className="flex-1 overflow-y-auto p-4">
-        {tab === 'match'    && <MatchTab />}
-        {tab === 'tailor'   && <TailorTab />}
-        {tab === 'versions' && <VersionsTab />}
-        {tab === 'cover'    && <CoverTab />}
-      </div>
-    </div>
-  );
-}

@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { User, FileText, GraduationCap, Code, Briefcase, Award, Plus, Trash2, ListChecks, Star, RefreshCcw, Upload, Loader2 } from 'lucide-react';
 import { useResume } from '@/app/lib/resume-store';
+import { useVersions } from '@/app/lib/version-store';
 import { SectionCard } from './SectionCard';
 import { AIReview } from '../AIReview';
 import { MonthYearPicker } from './MonthYearPicker';
@@ -38,6 +39,7 @@ export function Editor() {
   const [uploading, setUploading] = React.useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { data, updateData, resetData, setActiveSection, activeSection } = useResume();
+  const { saveVersion } = useVersions();
   const { toast } = useToast();
   const editorRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -71,18 +73,48 @@ export function Editor() {
 
       const parsed = await res.json();
 
-      // Merge parsed data — add UUIDs if missing
-      const withIds = {
-        ...parsed,
+      // ── Save current resume as "Draft" before replacing ──────────────────
+      const hasExistingData =
+        data.personalInfo?.fullName ||
+        data.professionalSummary ||
+        data.experience?.some(e => e.company || e.role) ||
+        data.projects?.some(p => p.title) ||
+        data.education?.some(e => e.institution || e.degree);
+
+      if (hasExistingData) {
+        saveVersion(`Draft – ${new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}`, data);
+      }
+
+      // ── Full replace — not a merge ────────────────────────────────────────
+      const imported = {
+        personalInfo: {
+          fullName:       parsed.personalInfo?.fullName       || '',
+          email:          parsed.personalInfo?.email          || '',
+          phone:          parsed.personalInfo?.phone          || '',
+          countryCode:    parsed.personalInfo?.countryCode    || data.personalInfo?.countryCode || '+91',
+          linkedin:       parsed.personalInfo?.linkedin       || '',
+          github:         parsed.personalInfo?.github         || '',
+          additionalInfo: parsed.personalInfo?.additionalInfo || '',
+        },
+        professionalSummary: parsed.professionalSummary || '',
         education:      (parsed.education      || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID() })),
         experience:     (parsed.experience     || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID() })),
-        projects:       (parsed.projects       || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID() })),
+        projects:       (parsed.projects       || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID(), date: e.date || '' })),
         skills:         (parsed.skills         || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID() })),
         certifications: (parsed.certifications || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID() })),
+        achievements:      parsed.achievements      || '',
+        extracurriculars:  parsed.extracurriculars  || '',
+        languages:         parsed.languages         || [],
+        accentColor:       data.accentColor          || '#2966A3',
       };
 
-      updateData(withIds);
-      toast({ title: '✓ Resume imported', description: 'Your details have been filled in. Review and edit as needed.' });
+      updateData(imported);
+      toast({
+        title: '✓ Resume imported',
+        description: hasExistingData
+          ? 'Your previous resume was saved as a Draft in Versions.'
+          : 'Your details have been filled in. Review and edit as needed.',
+      });
     } catch (err: any) {
       toast({ title: 'Import failed', description: err.message || 'Could not parse the resume.', variant: 'destructive' });
     } finally {
@@ -379,6 +411,13 @@ export function Editor() {
           {/* ── EXPERIENCE ── */}
           <SectionCard id="experience" title="Internships / Experience" icon={<Briefcase className="h-4 w-4" />}>
             <div className="space-y-6">
+              {data.experience.length === 0 && (
+                <div className="text-center py-6 text-muted-foreground text-sm border border-dashed rounded-lg">
+                  <Briefcase className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                  <p className="font-medium">No experience added yet</p>
+                  <p className="text-xs mt-1">Click below to add an internship or job</p>
+                </div>
+              )}
               {data.experience.map((exp, idx) => {
                 const dateError = isEndDateBeforeStartDate(exp.startDate, exp.endDate);
                 return (
@@ -437,7 +476,7 @@ export function Editor() {
                 );
               })}
               <Button variant="outline" size="sm" onClick={addExperience} className="w-full">
-                <Plus className="mr-2 h-4 w-4" /> Add Another Experience
+                <Plus className="mr-2 h-4 w-4" /> {data.experience.length === 0 ? 'Add Experience' : 'Add Another Experience'}
               </Button>
             </div>
           </SectionCard>

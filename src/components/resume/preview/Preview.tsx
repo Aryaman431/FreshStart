@@ -2,22 +2,25 @@
 
 import React, { useRef, useState } from 'react';
 import { useResume } from '@/app/lib/resume-store';
-import { Download, Loader2, Eye, BarChart2, Briefcase, PanelRight } from 'lucide-react';
+import { Download, Loader2, Eye, BarChart2, Briefcase, PanelRight, History, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ResumeContent } from './ResumeContent';
 import { PreviewModal } from './PreviewModal';
 import { ScoreModal } from './ScoreModal';
 import { JobToolsModal } from './JobToolsModal';
-import { ToolsPanel } from '../tools/ToolsPanel';
+import { ToolsPanel, VersionsPanel } from '../tools/ToolsPanel';
 import { downloadResumePdf } from './downloadPdf';
+import { useUser, SignInButton } from '@clerk/nextjs';
 
 export function Preview() {
   const { data, activeSection } = useResume();
+  const { isSignedIn, isLoaded } = useUser();
   const [isDownloading, setIsDownloading] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [showJobTools, setShowJobTools] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [showVersions, setShowVersions] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -46,15 +49,29 @@ export function Preview() {
           Preview
         </Button>
 
-        <Button
-          variant="default"
-          size="sm"
-          onClick={() => setShowJobTools(true)}
-          className="bg-amber-500 hover:bg-amber-600 text-white font-semibold shadow shadow-amber-200 transition-all rounded-full px-3 h-8 text-xs"
-        >
-          <Briefcase className="h-3.5 w-3.5 mr-1" />
-          Job Tools
-        </Button>
+        {isLoaded && !isSignedIn ? (
+          <SignInButton mode="modal">
+            <Button
+              variant="default"
+              size="sm"
+              className="bg-amber-500 hover:bg-amber-600 text-white font-semibold shadow shadow-amber-200 transition-all rounded-full px-3 h-8 text-xs"
+              title="Sign in to use Job Tools"
+            >
+              <Briefcase className="h-3.5 w-3.5 mr-1" />
+              Job Tools
+            </Button>
+          </SignInButton>
+        ) : (
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setShowJobTools(true)}
+            className="bg-amber-500 hover:bg-amber-600 text-white font-semibold shadow shadow-amber-200 transition-all rounded-full px-3 h-8 text-xs"
+          >
+            <Briefcase className="h-3.5 w-3.5 mr-1" />
+            Job Tools
+          </Button>
+        )}
 
         <Button
           variant="default"
@@ -81,6 +98,14 @@ export function Preview() {
         </Button>
 
         {/* Tools panel toggle — rightmost */}
+        <button
+          onClick={() => setShowVersions(true)}
+          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-purple-600 transition-colors bg-transparent border-none shadow-none px-0"
+        >
+          <History className="h-3.5 w-3.5" />
+          Versions
+        </button>
+
         <Button
           variant={toolsOpen ? 'default' : 'outline'}
           size="sm"
@@ -142,6 +167,29 @@ export function Preview() {
 
       {showJobTools && (
         <JobToolsModal data={data} onClose={() => setShowJobTools(false)} />
+      )}
+
+      {/* Versions modal */}
+      {showVersions && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/30">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 w-[92vw] max-w-[480px] max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b shrink-0">
+              <div className="flex items-center gap-2">
+                <History className="h-4 w-4 text-purple-600" />
+                <span className="font-semibold text-slate-800 text-sm">Saved Versions</span>
+              </div>
+              <button
+                onClick={() => setShowVersions(false)}
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-5 py-4">
+              <VersionsPanel />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
