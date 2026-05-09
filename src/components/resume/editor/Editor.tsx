@@ -70,10 +70,12 @@ export function Editor() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: 'Unknown error' }));
+        console.error('Parser error response:', err);
         throw new Error(err.detail || `Server error ${res.status}`);
       }
 
       const parsed = await res.json();
+      console.log('Parsed resume data:', parsed);
 
       // ── Save current resume as "Draft" before replacing ──────────────────
       const hasExistingData =

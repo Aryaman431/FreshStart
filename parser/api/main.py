@@ -205,18 +205,22 @@ def parse_resume_text(resume_text: str) -> dict:
 # ── FastAPI app ───────────────────────────────────────────────────────────────
 app = FastAPI(title="FreshStart Resume Parser", version="1.0.0")
 
-_origins = os.getenv(
-    "CORS_ORIGINS",
-    "http://localhost:3000,http://localhost:9003"
-).split(",")
+_raw_origins = os.getenv("CORS_ORIGINS", "")
+# If CORS_ORIGINS is set, use it; otherwise allow all origins (safe for public API)
+_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()] or ["*"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o.strip() for o in _origins],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_origins=_origins,
+    allow_credentials=False,  # must be False when allow_origins=["*"]
+    allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/")
+def root():
+    return {"status": "running", "service": "FreshStart Resume Parser"}
 
 
 @app.get("/health")
