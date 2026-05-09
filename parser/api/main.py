@@ -79,11 +79,11 @@ async def parse_resume(file: UploadFile = File(...)):
     # ── Save to temp file ─────────────────────────────────────────────────────
     tmp_path = None
     try:
+        # On Windows, NamedTemporaryFile holds a lock — must close before reading
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
             tmp.write(contents)
             tmp_path = tmp.name
-
-        log.info("Saved to temp: %s", tmp_path)
+        # File is now closed and fully flushed — safe to open with fitz/pdfplumber
 
         # ── Extract text ──────────────────────────────────────────────────────
         resume_text = extract_text(tmp_path)
