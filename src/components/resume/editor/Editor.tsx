@@ -62,6 +62,7 @@ export function Editor() {
       form.append('file', file);
 
       const PARSER_URL = process.env.NEXT_PUBLIC_PARSER_URL || 'http://localhost:8000';
+      console.log('Using parser URL:', PARSER_URL);
 
       const res = await fetch(`${PARSER_URL}/parse-resume`, {
         method: 'POST',
