@@ -1,13 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { ResumeData } from '@/types/resume';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { ResumeData, initialResumeData } from '@/types/resume';
+import { supabase } from '@/lib/supabase';
 
 export interface ResumeVersion {
   id: string;
   name: string;
   data: ResumeData;
-  createdAt: string; // ISO string — plain, no Firestore objects
+  createdAt: string;
 }
 
 interface VersionContextType {
@@ -18,56 +20,99 @@ interface VersionContextType {
 }
 
 const VersionContext = createContext<VersionContextType | undefined>(undefined);
-const LS_KEY = 'freshstart-resume-versions';
-
-function loadFromStorage(): ResumeVersion[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveToStorage(versions: ResumeVersion[]) {
-  localStorage.setItem(LS_KEY, JSON.stringify(versions));
-}
 
 export function VersionProvider({ children }: { children: React.ReactNode }) {
-  const [versions, setVersions] = useState<ResumeVersion[]>(() => loadFromStorage());
+  const { user, isLoaded } = useUser();
+  const [versions, setVersions] = useState<ResumeVersion[]>([]);
 
-  const saveVersion = useCallback((name: string, data: ResumeData) => {
-    // Strip any non-serializable fields (e.g. Firestore Timestamps)
+  // ── Load versions from Supabase when user signs in ────────────────────────
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    if (!user) {
+      // Logged out — clear all versions
+      setVersions([]);
+      return;
+    }
+
+    supabase
+      .from('resume_versions')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Failed to load versions:', error.message);
+          return;
+        }
+        const mapped: ResumeVersion[] = (data || []).map(row => ({
+          id: row.id,
+          name: row.name,
+          data: row.resume_data as ResumeData,
+          createdAt: row.created_at,
+        }));
+        setVersions(mapped);
+      });
+  }, [user?.id, isLoaded]);
+
+  // ── Save a new version ────────────────────────────────────────────────────
+  const saveVersion = useCallback(async (name: string, data: ResumeData) => {
     const cleanData: ResumeData = JSON.parse(JSON.stringify(data));
-    const version: ResumeVersion = {
-      id: crypto.randomUUID(),
-      name: name.trim() || `Version ${new Date().toLocaleString()}`,
-      data: cleanData,
-      createdAt: new Date().toISOString(),
-    };
-    setVersions(prev => {
-      const next = [version, ...prev].slice(0, 20); // keep max 20
-      saveToStorage(next);
-      return next;
-    });
-  }, []);
+    const id = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
+    const trimmedName = name.trim() || `Version ${new Date().toLocaleString()}`;
 
-  const deleteVersion = useCallback((id: string) => {
-    setVersions(prev => {
-      const next = prev.filter(v => v.id !== id);
-      saveToStorage(next);
-      return next;
-    });
-  }, []);
+    const version: ResumeVersion = { id, name: trimmedName, data: cleanData, createdAt };
 
-  const renameVersion = useCallback((id: string, name: string) => {
-    setVersions(prev => {
-      const next = prev.map(v => v.id === id ? { ...v, name } : v);
-      saveToStorage(next);
-      return next;
+    // Optimistic update
+    setVersions(prev => [version, ...prev].slice(0, 20));
+
+    if (!user) return; // guest — in-memory only
+
+    const { error } = await supabase.from('resume_versions').insert({
+      id,
+      user_id: user.id,
+      name: trimmedName,
+      resume_data: cleanData,
+      created_at: createdAt,
     });
-  }, []);
+
+    if (error) console.error('Failed to save version:', error.message);
+  }, [user]);
+
+  // ── Delete a version ──────────────────────────────────────────────────────
+  const deleteVersion = useCallback(async (id: string) => {
+    setVersions(prev => prev.filter(v => v.id !== id));
+
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('resume_versions')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id);
+
+    if (error) console.error('Failed to delete version:', error.message);
+  }, [user]);
+
+  // ── Rename a version ──────────────────────────────────────────────────────
+  const renameVersion = useCallback(async (id: string, name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+
+    setVersions(prev => prev.map(v => v.id === id ? { ...v, name: trimmed } : v));
+
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('resume_versions')
+      .update({ name: trimmed })
+      .eq('id', id)
+      .eq('user_id', user.id);
+
+    if (error) console.error('Failed to rename version:', error.message);
+  }, [user]);
 
   return (
     <VersionContext.Provider value={{ versions, saveVersion, deleteVersion, renameVersion }}>

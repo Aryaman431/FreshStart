@@ -206,13 +206,13 @@ def parse_resume_text(resume_text: str) -> dict:
 app = FastAPI(title="FreshStart Resume Parser", version="1.0.0")
 
 _raw_origins = os.getenv("CORS_ORIGINS", "")
-# If CORS_ORIGINS is set, use it; otherwise allow all origins (safe for public API)
+# If CORS_ORIGINS is set, use it; otherwise allow all origins
 _origins = [o.strip() for o in _raw_origins.split(",") if o.strip()] or ["*"]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_origins,
-    allow_credentials=False,  # must be False when allow_origins=["*"]
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

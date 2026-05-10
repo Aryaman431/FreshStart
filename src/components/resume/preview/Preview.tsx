@@ -97,14 +97,23 @@ export function Preview() {
           )}
         </Button>
 
-        {/* Tools panel toggle — rightmost */}
-        <button
-          onClick={() => setShowVersions(true)}
-          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-purple-600 transition-colors bg-transparent border-none shadow-none px-0"
-        >
-          <History className="h-3.5 w-3.5" />
-          Versions
-        </button>
+        {/* Versions button — always visible, prompts sign-in when logged out */}
+        {isLoaded && !isSignedIn ? (
+          <SignInButton mode="modal">
+            <button className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-purple-600 transition-colors bg-transparent border-none shadow-none px-0">
+              <History className="h-3.5 w-3.5" />
+              Versions
+            </button>
+          </SignInButton>
+        ) : (
+          <button
+            onClick={() => setShowVersions(true)}
+            className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-purple-600 transition-colors bg-transparent border-none shadow-none px-0"
+          >
+            <History className="h-3.5 w-3.5" />
+            Versions
+          </button>
+        )}
 
         <Button
           variant={toolsOpen ? 'default' : 'outline'}
