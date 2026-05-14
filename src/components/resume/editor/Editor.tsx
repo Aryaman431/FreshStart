@@ -18,6 +18,12 @@ import { useToast } from '@/hooks/use-toast';
 
 import { normalizeDatePair } from '@/lib/normalize-date';
 
+// ── Phone sanitizer — strips country code, keeps last 10 digits only ─────────
+function sanitizePhone(phone: string = ''): string {
+  const digits = phone.replace(/\D/g, '');
+  return digits.length > 10 ? digits.slice(-10) : digits;
+}
+
 // Common country codes
 const COUNTRY_CODES = [
   { code: '+91', label: '🇮🇳 +91' },
@@ -104,7 +110,7 @@ export function Editor() {
         personalInfo: {
           fullName:       parsed.personalInfo?.fullName       || '',
           email:          parsed.personalInfo?.email          || '',
-          phone:          parsed.personalInfo?.phone          || '',
+          phone:          sanitizePhone(parsed.personalInfo?.phone || ''),
           countryCode:    parsed.personalInfo?.countryCode    || data.personalInfo?.countryCode || '+91',
           linkedin:       parsed.personalInfo?.linkedin       || '',
           github:         parsed.personalInfo?.github         || '',
