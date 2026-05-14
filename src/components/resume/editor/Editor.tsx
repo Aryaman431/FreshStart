@@ -272,7 +272,7 @@ export function Editor() {
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
             title="Import existing resume PDF"
-            className="gap-1.5 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/5"
+            className="gap-1.5 text-xs font-semibold text-primary border-primary/30 hover:bg-lavender-100 hover:bg-[#e9e4f7] hover:text-primary"
           >
             {uploading
               ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Importing…</>
