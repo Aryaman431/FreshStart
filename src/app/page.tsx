@@ -160,9 +160,9 @@ export default function LandingPage() {
               <div className="absolute inset-0 rounded-full bg-orange-500/10 blur-xl scale-150 pointer-events-none" />
               <button
                 onClick={() => window.open('https://24x7jobs.vercel.app/', '_blank')}
-                className="relative z-10 flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-lg shadow-orange-500/30 hover:scale-[1.03] transition-all duration-300 text-sm"
+                className="relative z-10 flex items-center gap-2 px-5 py-2 rounded-full text-orange-500 font-semibold hover:scale-[1.03] transition-all duration-300 text-sm"
               >
-                <div className="h-2 w-2 rounded-full bg-white animate-pulse shrink-0" />
+                <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse shrink-0" />
                 Live Jobs
               </button>
             </div>
