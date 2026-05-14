@@ -68,6 +68,7 @@ export interface ResumeData {
   extracurriculars: string;
   languages: Language[];
   accentColor: string;
+  interests: string;
 }
 
 export const initialResumeData: ResumeData = {
@@ -90,4 +91,5 @@ export const initialResumeData: ResumeData = {
   extracurriculars: '',
   languages: [],
   accentColor: '#2966A3',
+  interests: '',
 };

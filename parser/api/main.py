@@ -129,7 +129,8 @@ Return exactly this shape:
   "projects": [{{"title":"","techStack":"","link":"","startDate":"","endDate":"","description":""}}],
   "skills": [{{"category":"","values":""}}],
   "certifications": [{{"name":"","issuer":"","year":""}}],
-  "achievements": ""
+  "achievements": "",
+  "interests": ""
 }}
 
 Resume:
@@ -176,6 +177,7 @@ def _normalise(raw: dict) -> dict:
             "issuer": s(c.get("issuer")), "year": s(c.get("year"))}
             for i, c in enumerate(l(raw.get("certifications")))],
         "achievements": s(raw.get("achievements")),
+        "interests": s(raw.get("interests") or raw.get("hobbies") or raw.get("interests_hobbies") or raw.get("hobbies_interests") or ""),
     }
 
 
@@ -186,17 +188,29 @@ def parse_resume_text(resume_text: str) -> dict:
     for model in MODELS:
         try:
             resp = client.models.generate_content(model=model, contents=prompt)
-            cleaned = _strip_md(resp.text)
+            raw_text = resp.text
+            log.info("Gemini raw (first 300): %s", raw_text[:300])
+            cleaned = _strip_md(raw_text)
             try:
                 raw = json.loads(cleaned)
-            except json.JSONDecodeError:
+                log.info("Gemini JSON keys: %s", list(raw.keys()))
+            except json.JSONDecodeError as je:
+                log.error("JSON parse failed: %s | cleaned[:500]: %s", je, cleaned[:500])
                 m = re.search(r"\{.*\}", cleaned, re.DOTALL)
-                raw = json.loads(m.group()) if m else {}
+                if m:
+                    try:
+                        raw = json.loads(m.group())
+                    except json.JSONDecodeError:
+                        raise ValueError(f"Gemini returned invalid JSON: {je}. Preview: {cleaned[:200]}")
+                else:
+                    raise ValueError(f"Gemini returned no JSON object. Preview: {cleaned[:200]}")
             return _normalise(raw)
         except Exception as e:
             last_err = e
-            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-                time.sleep(5)
+            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e) or "503" in str(e) or "UNAVAILABLE" in str(e):
+                wait = 15 if "503" in str(e) or "UNAVAILABLE" in str(e) else 2
+                log.info("Model %s unavailable (%s), trying next...", model, str(e)[:40])
+                time.sleep(wait)
                 continue
             raise
     raise ValueError(f"All models failed. Last: {last_err}")

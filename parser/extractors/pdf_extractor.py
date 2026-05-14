@@ -85,13 +85,15 @@ def extract_with_ocr(pdf_path: str) -> str:
 
 def _clean(raw: str) -> str:
     """Normalise whitespace and fix common PDF/LaTeX spacing artifacts."""
-    text = raw.replace("\t", " ")
+    # Remove form-feed / page-break characters from multi-page PDFs
+    text = raw.replace("\f", " ")
+    text = text.replace("\t", " ")
 
     # Collapse multiple spaces
     text = re.sub(r" {2,}", " ", text)
 
-    # Collapse 3+ blank lines to 2
-    text = re.sub(r"\n{3,}", "\n\n", text)
+    # Collapse multiple blank lines
+    text = re.sub(r"\n\s*\n", "\n", text)
 
     # Fix broken LaTeX line-wrapping: "soft\nware" → "soft ware"
     text = re.sub(r"([a-z])\n([a-z])", r"\1 \2", text)

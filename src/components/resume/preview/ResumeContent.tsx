@@ -165,9 +165,19 @@ function dateRange(start: string, end: string) {
   const s = start?.startsWith('-') ? start.slice(1) : (start ?? '');
   const e = end?.startsWith('-') ? end.slice(1) : (end ?? '');
   if (!filled(s) && !filled(e)) return undefined;
-  if (!filled(e)) return s;
-  if (!filled(s)) return e;
-  return `${s} -- ${e}`;
+
+  // Extract years to guard against reversed chronology in stored data
+  const sy = s.match(/\b(19|20)\d{2}\b/)?.[0];
+  const ey = e.match(/\b(19|20)\d{2}\b/)?.[0];
+  // If end year is before start year (bad import data), drop the end date
+  const safeEnd = (ey && sy && Number(ey) < Number(sy)) ? '' : e;
+  // If start === end (duplicate), drop the end date
+  const finalEnd = (safeEnd && safeEnd === s) ? '' : safeEnd;
+
+  if (!filled(s) && !filled(finalEnd)) return undefined;
+  if (!filled(finalEnd)) return s;
+  if (!filled(s)) return finalEnd;
+  return `${s} -- ${finalEnd}`;
 }
 
 export function ResumeContent({ data, activeSection, isPrint = false }: ResumeContentProps) {
@@ -412,6 +422,16 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
           <Section title="Achievements &amp; Awards" />
           <div data-section-body style={{ marginTop: 0, paddingTop: 0 }}>
             <Bullets text={data.achievements} />
+          </div>
+        </div>
+      )}
+
+      {/* ══ INTERESTS (conditional) ══════════════════════════════════════════ */}
+      {filled(data.interests) && (
+        <div data-section style={{ paddingTop: 14 }}>
+          <Section title="Interests" />
+          <div data-section-body style={{ lineHeight: 1.4, marginTop: 0, paddingTop: 0 }}>
+            {data.interests}
           </div>
         </div>
       )}

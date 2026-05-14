@@ -66,15 +66,22 @@ export function Editor() {
       const PARSER_URL = process.env.NEXT_PUBLIC_PARSER_URL || 'http://localhost:8000';
       console.log('Using parser URL:', PARSER_URL);
 
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 90000); // 90s — Render cold start can take ~50s
+
       const res = await fetch(`${PARSER_URL}/parse-resume`, {
         method: 'POST',
         body: form,
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ detail: 'Unknown error' }));
-        console.error('Parser error response:', err);
-        throw new Error(err.detail || `Server error ${res.status}`);
+        const text = await res.text().catch(() => '');
+        let detail = `Server error ${res.status}`;
+        try { detail = JSON.parse(text)?.detail || detail; } catch { detail = text || detail; }
+        console.error('Parser error response:', res.status, detail);
+        throw new Error(detail);
       }
 
       const parsed = await res.json();
@@ -121,6 +128,7 @@ export function Editor() {
         achievements:      parsed.achievements      || '',
         extracurriculars:  parsed.extracurriculars  || '',
         languages:         parsed.languages         || [],
+        interests:         parsed.interests         || '',
         accentColor:       data.accentColor          || '#2966A3',
       };
 
@@ -132,7 +140,10 @@ export function Editor() {
           : 'Your details have been filled in. Review and edit as needed.',
       });
     } catch (err: any) {
-      toast({ title: 'Import failed', description: err.message || 'Could not parse the resume.', variant: 'destructive' });
+      const msg = err.name === 'AbortError'
+        ? 'Import timed out. The server may be waking up — please try again in 30 seconds.'
+        : err.message || 'Could not parse the resume.';
+      toast({ title: 'Import failed', description: msg, variant: 'destructive' });
     } finally {
       setUploading(false);
     }
@@ -410,11 +421,6 @@ export function Editor() {
                           <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">Start Date</Label>
                           <MonthYearPicker value={edu.startDate} onFocus={() => focusAndScroll('education')}
                             onChange={(val) => {
-                              if (val && edu.endDate && edu.endDate !== 'Present') {
-                                const sy = val.match(/\b(19|20)\d{2}\b/)?.[0];
-                                const ey = edu.endDate.match(/\b(19|20)\d{2}\b/)?.[0];
-                                if (sy && ey && Number(sy) > Number(ey)) return;
-                              }
                               const l = [...data.education]; l[idx].startDate = val; updateData({ education: l });
                             }} />
                         </div>
@@ -697,6 +703,20 @@ export function Editor() {
                 onChange={(e) => updateData({ achievements: e.target.value })}
                 placeholder="• Won 1st place in National Hackathon..."
                 className="min-h-[100px]"
+              />
+            </div>
+          </SectionCard>
+
+          {/* ── INTERESTS (optional) ── */}
+          <SectionCard id="interests" title="Interests" icon={<Star className="h-4 w-4" />}>
+            <div className="space-y-2">
+              <p className="text-[11px] text-muted-foreground">Optional — only appears on your resume if filled in.</p>
+              <Textarea
+                value={data.interests ?? ''}
+                onFocus={() => focusAndScroll('interests')}
+                onChange={(e) => updateData({ interests: e.target.value })}
+                placeholder="Photography, Open-source development, Chess, Hiking..."
+                className="min-h-[80px]"
               />
             </div>
           </SectionCard>
