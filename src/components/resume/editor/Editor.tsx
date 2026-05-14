@@ -16,6 +16,8 @@ import { BulletImprover } from './BulletImprover';
 import { useToast } from '@/hooks/use-toast';
 
 
+import { normalizeDatePair } from '@/lib/normalize-date';
+
 // Common country codes
 const COUNTRY_CODES = [
   { code: '+91', label: '🇮🇳 +91' },
@@ -102,9 +104,18 @@ export function Editor() {
           additionalInfo: parsed.personalInfo?.additionalInfo || '',
         },
         professionalSummary: parsed.professionalSummary || '',
-        education:      (parsed.education      || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID() })),
-        experience:     (parsed.experience     || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID() })),
-        projects:       (parsed.projects       || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID(), date: e.date || '' })),
+        education:      (parsed.education      || []).map((e: any) => {
+          const { startDate, endDate } = normalizeDatePair(e.startDate || '', e.endDate || '');
+          return { ...e, id: e.id || crypto.randomUUID(), startDate, endDate };
+        }),
+        experience:     (parsed.experience     || []).map((e: any) => {
+          const { startDate, endDate } = normalizeDatePair(e.startDate || '', e.endDate || '');
+          return { ...e, id: e.id || crypto.randomUUID(), startDate, endDate };
+        }),
+        projects:       (parsed.projects       || []).map((e: any) => {
+          const { startDate, endDate } = normalizeDatePair(e.startDate || '', e.endDate || '');
+          return { ...e, id: e.id || crypto.randomUUID(), startDate, endDate, date: e.date || '' };
+        }),
         skills:         (parsed.skills         || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID() })),
         certifications: (parsed.certifications || []).map((e: any) => ({ ...e, id: e.id || crypto.randomUUID() })),
         achievements:      parsed.achievements      || '',
@@ -218,7 +229,11 @@ export function Editor() {
 
   const isEndDateBeforeStartDate = (startDate: string, endDate: string) => {
     if (!startDate || !endDate || endDate === 'Present') return false;
-    return new Date(endDate) < new Date(startDate);
+    // Extract 4-digit year from "Month-Year" or plain "Year"
+    const startYear = startDate.match(/\b(19|20)\d{2}\b/)?.[0];
+    const endYear = endDate.match(/\b(19|20)\d{2}\b/)?.[0];
+    if (!startYear || !endYear) return false;
+    return Number(endYear) < Number(startYear);
   };
 
   return (
@@ -394,12 +409,26 @@ export function Editor() {
                         <div>
                           <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">Start Date</Label>
                           <MonthYearPicker value={edu.startDate} onFocus={() => focusAndScroll('education')}
-                            onChange={(val) => { const l = [...data.education]; l[idx].startDate = val; updateData({ education: l }); }} />
+                            onChange={(val) => {
+                              if (val && edu.endDate && edu.endDate !== 'Present') {
+                                const sy = val.match(/\b(19|20)\d{2}\b/)?.[0];
+                                const ey = edu.endDate.match(/\b(19|20)\d{2}\b/)?.[0];
+                                if (sy && ey && Number(sy) > Number(ey)) return;
+                              }
+                              const l = [...data.education]; l[idx].startDate = val; updateData({ education: l });
+                            }} />
                         </div>
                         <div>
                           <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">End Date (or Present)</Label>
                           <MonthYearPicker value={edu.endDate} onFocus={() => focusAndScroll('education')} allowPresent
-                            onChange={(val) => { const l = [...data.education]; l[idx].endDate = val; updateData({ education: l }); }} />
+                            onChange={(val) => {
+                              if (val !== 'Present' && val && edu.startDate) {
+                                const sy = edu.startDate.match(/\b(19|20)\d{2}\b/)?.[0];
+                                const ey = val.match(/\b(19|20)\d{2}\b/)?.[0];
+                                if (sy && ey && Number(ey) < Number(sy)) return;
+                              }
+                              const l = [...data.education]; l[idx].endDate = val; updateData({ education: l });
+                            }} />
                         </div>
                         {dateError && <p className="text-xs text-destructive">End date cannot be before start date.</p>}
                       </div>
@@ -459,7 +488,14 @@ export function Editor() {
                           <div>
                             <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">End Date (or Present)</Label>
                             <MonthYearPicker value={exp.endDate} onFocus={() => focusAndScroll('experience')} allowPresent
-                              onChange={(val) => { const l = [...data.experience]; l[idx].endDate = val; updateData({ experience: l }); }} />
+                              onChange={(val) => {
+                                if (val !== 'Present' && val && exp.startDate) {
+                                  const sy = exp.startDate.match(/\b(19|20)\d{2}\b/)?.[0];
+                                  const ey = val.match(/\b(19|20)\d{2}\b/)?.[0];
+                                  if (sy && ey && Number(ey) < Number(sy)) return;
+                                }
+                                const l = [...data.experience]; l[idx].endDate = val; updateData({ experience: l });
+                              }} />
                           </div>
                           {dateError && <p className="text-xs text-destructive">End date cannot be before start date.</p>}
                         </div>
@@ -531,7 +567,14 @@ export function Editor() {
                         <div>
                           <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">End Date (or Present)</Label>
                           <MonthYearPicker value={proj.endDate || ''} onFocus={() => focusAndScroll('projects')} allowPresent
-                            onChange={(val) => { const l = [...data.projects]; l[idx].endDate = val; updateData({ projects: l }); }} />
+                            onChange={(val) => {
+                              if (val !== 'Present' && val && proj.startDate) {
+                                const sy = proj.startDate.match(/\b(19|20)\d{2}\b/)?.[0];
+                                const ey = val.match(/\b(19|20)\d{2}\b/)?.[0];
+                                if (sy && ey && Number(ey) < Number(sy)) return;
+                              }
+                              const l = [...data.projects]; l[idx].endDate = val; updateData({ projects: l });
+                            }} />
                         </div>
                         {dateError && <p className="text-xs text-destructive">End date cannot be before start date.</p>}
                       </div>

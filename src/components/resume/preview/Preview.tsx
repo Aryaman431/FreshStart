@@ -21,6 +21,7 @@ export function Preview() {
   const [showJobTools, setShowJobTools] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [showVersions, setShowVersions] = useState(false);
+  const [zoom, setZoom] = useState(100);
   const scrollRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -149,6 +150,8 @@ export function Preview() {
               boxSizing: 'border-box',
               boxShadow: '0 4px 32px 0 rgba(80,60,140,0.18)',
               paddingBottom: '60px',
+              transform: `scale(${zoom / 100})`,
+              transformOrigin: 'top center',
             }}
           >
             <ResumeContent data={data} activeSection={activeSection} />
@@ -163,6 +166,22 @@ export function Preview() {
           <div className="w-[280px] h-full overflow-y-auto">
             <ToolsPanel />
           </div>
+        </div>
+      </div>
+
+      {/* Zoom bar — compact, bottom-left */}
+      <div className="shrink-0 border-t bg-white print:hidden flex">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/90 border border-gray-200 shadow-sm ml-4 my-1.5">
+          <span className="text-[10px] font-medium text-slate-400 w-7 text-right tabular-nums">{zoom}%</span>
+          <input
+            type="range" min={40} max={150} step={5} value={zoom}
+            onChange={(e) => setZoom(Number(e.target.value))}
+            className="w-32 h-1 accent-purple-600 cursor-pointer"
+          />
+          <button onClick={() => setZoom(100)}
+            className="text-xs text-purple-600 hover:text-purple-800 font-medium transition-colors">
+            ↺
+          </button>
         </div>
       </div>
 

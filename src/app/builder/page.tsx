@@ -92,7 +92,9 @@ function BuilderContent() {
               </div>
             </ResizablePanel>
 
-            <ResizableHandle withHandle className="bg-slate-400 w-1.5" />
+            <ResizableHandle withHandle className="bg-slate-200 hover:bg-purple-400/40 transition-colors w-1.5 group relative">
+              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-1 rounded-full bg-purple-300/70 group-hover:bg-purple-500 transition-colors" />
+            </ResizableHandle>
 
             {/* Preview Panel */}
             <ResizablePanel defaultSize={isMobile ? 0 : 62} minSize={isMobile ? 0 : 30} maxSize={isMobile ? 100 : 75}>

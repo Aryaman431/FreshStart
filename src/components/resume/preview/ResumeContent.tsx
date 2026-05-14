@@ -161,10 +161,13 @@ function Bullets({ text, ghost }: { text: string; ghost?: boolean }) {
 }
 
 function dateRange(start: string, end: string) {
-  if (!filled(start) && !filled(end)) return undefined;
-  if (!filled(end)) return start;
-  if (!filled(start)) return end;
-  return `${start} -- ${end}`;
+  // Strip legacy "-Year" format (leading dash) for display
+  const s = start?.startsWith('-') ? start.slice(1) : (start ?? '');
+  const e = end?.startsWith('-') ? end.slice(1) : (end ?? '');
+  if (!filled(s) && !filled(e)) return undefined;
+  if (!filled(e)) return s;
+  if (!filled(s)) return e;
+  return `${s} -- ${e}`;
 }
 
 export function ResumeContent({ data, activeSection, isPrint = false }: ResumeContentProps) {
