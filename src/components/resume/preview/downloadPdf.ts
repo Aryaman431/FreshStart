@@ -91,30 +91,41 @@ export async function downloadResumePdf(data: ResumeData): Promise<void> {
   });
 
   // ── Smart page boundaries ────────────────────────────────────────────────
-  // Collect the top-y of every section wrapper (breakInside:avoid blocks).
-  // When a naive A4 slice would cut through one, snap the boundary upward
-  // to just before that section starts.
+  // Collect the top-y of every [data-section] wrapper.
   const sectionTops: number[] = [];
   element.querySelectorAll<HTMLElement>('[data-section]').forEach(sec => {
     const r = sec.getBoundingClientRect();
     sectionTops.push(r.top - rootRect.top);
   });
 
+  // Approximate line height at scale=3 for 11px font: ~18px rendered
+  const LINE_HEIGHT_PX = 18;
+  // Footer padding — leave this much blank space at the bottom of each page
+  const FOOTER_PAD_PX = Math.round(A4_HEIGHT_PX * (15 / PDF_HEIGHT_MM)); // ~15mm
+
   function smartPageBoundaries(totalHeight: number): number[] {
     const boundaries: number[] = [0];
     let cursor = 0;
     while (cursor < totalHeight) {
-      const naiveCut = cursor + A4_HEIGHT_PX;
-      if (naiveCut >= totalHeight) break;
+      // Usable height per page — leave footer padding
+      const pageEnd = cursor + A4_HEIGHT_PX - FOOTER_PAD_PX;
+      if (pageEnd >= totalHeight) break;
 
-      // Find the nearest section start that falls within the last 15% of the page
-      // (i.e. a heading that would be stranded at the bottom)
-      const safeZoneStart = cursor + A4_HEIGHT_PX * 0.85;
+      // Find the nearest section that starts in the bottom 15% of the usable area
+      const safeZoneStart = cursor + (A4_HEIGHT_PX - FOOTER_PAD_PX) * 0.85;
       const orphanSection = sectionTops.find(
-        top => top >= safeZoneStart && top < naiveCut
+        top => top >= safeZoneStart && top <= pageEnd
       );
 
-      const cut = orphanSection !== undefined ? orphanSection : naiveCut;
+      let cut: number;
+      if (orphanSection !== undefined) {
+        // Snap to just before the section heading, with a small gap
+        cut = Math.max(cursor + 1, orphanSection - FOOTER_PAD_PX);
+      } else {
+        // Natural cut — round down to nearest line boundary to avoid mid-text slicing
+        cut = pageEnd - ((pageEnd % LINE_HEIGHT_PX) || 0);
+      }
+
       boundaries.push(cut);
       cursor = cut;
     }

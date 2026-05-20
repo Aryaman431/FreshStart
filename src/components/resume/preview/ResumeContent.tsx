@@ -100,7 +100,7 @@ function Ghost({ children }: { children: React.ReactNode }) {
 
 function Section({ title }: { title: string }) {
   return (
-    <div style={{ marginTop: 0, marginBottom: 0 , breakAfter: "avoid", pageBreakAfter: "avoid" }}>
+    <div style={{ marginTop: 0, marginBottom: 0 }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
         <div
           data-section-title
@@ -389,10 +389,10 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
             const catLabel = filled(row.category) ? row.category : `Category ${i + 1}`;
             const vals = row.values;
             return (
-              <div key={row.id}>
-                <span style={{ fontWeight: 700 }}>{catLabel}: </span>
+              <div key={row.id} style={{ marginBottom: 2, display: "flex", flexWrap: "wrap", alignItems: "baseline" }}>
+                <span style={{ fontWeight: 700, flexShrink: 0, marginRight: 4 }}>{catLabel}:</span>
                 {filled(vals)
-                  ? <span style={!hasSkills ? DIM : {}}>{vals}</span>
+                  ? <span style={{ ...((!hasSkills) ? DIM : {}), wordBreak: "break-word", overflowWrap: "anywhere", flex: 1, minWidth: 0 }}>{vals}</span>
                   : <Ghost>—</Ghost>
                 }
               </div>
@@ -408,8 +408,13 @@ export function ResumeContent({ data, activeSection, isPrint = false }: ResumeCo
           <div data-section-body style={{ marginTop: 0, paddingTop: 0 }}>
             {data.certifications.filter(c => filled(c.name)).map((cert) => (
               <div key={cert.id} style={{ marginBottom: 3 }}>
-                <Row bold left={cert.name} right={filled(cert.year) ? cert.year : undefined} />
-                {filled(cert.issuer) && <div style={{ fontStyle: "italic" }}>{cert.issuer}</div>}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                  <span style={{ fontWeight: 700, fontSize: "11px", flex: 1, minWidth: 0, wordBreak: "break-word", overflowWrap: "anywhere" }}>{cert.name}</span>
+                  {filled(cert.year) && (
+                    <span style={{ fontWeight: 700, fontSize: "10px", whiteSpace: "nowrap", flexShrink: 0 }}>{cert.year}</span>
+                  )}
+                </div>
+                {filled(cert.issuer) && <div style={{ fontStyle: "italic", fontSize: "11px" }}>{cert.issuer}</div>}
               </div>
             ))}
           </div>

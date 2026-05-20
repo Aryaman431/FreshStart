@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { Accordion } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,14 +14,16 @@ import { AIReview } from '../AIReview';
 import { MonthYearPicker } from './MonthYearPicker';
 import { BulletImprover } from './BulletImprover';
 import { useToast } from '@/hooks/use-toast';
-
-
 import { normalizeDatePair } from '@/lib/normalize-date';
 
-// ── Phone sanitizer — strips country code, keeps last 10 digits only ─────────
+// ── Phone sanitizer ───────────────────────────────────────────────────────────
 function sanitizePhone(phone: string = ''): string {
   const digits = phone.replace(/\D/g, '');
   return digits.length > 10 ? digits.slice(-10) : digits;
+}
+
+export interface EditorHandle {
+  triggerImport: () => void;
 }
 
 // Common country codes
@@ -42,7 +44,7 @@ const COUNTRY_CODES = [
   { code: '+7',  label: '🇷🇺 +7' },
 ];
 
-export function Editor() {
+export const Editor = forwardRef<EditorHandle, { onUploadingChange?: (v: boolean) => void }>(function Editor({ onUploadingChange }, ref) {
   const [emailError, setEmailError] = React.useState('');
   const [uploading, setUploading] = React.useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -52,6 +54,10 @@ export function Editor() {
   const editorRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [scrollTrigger, setScrollTrigger] = React.useState(0);
+
+  useImperativeHandle(ref, () => ({
+    triggerImport: () => fileInputRef.current?.click(),
+  }));
 
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -65,6 +71,7 @@ export function Editor() {
     }
 
     setUploading(true);
+    onUploadingChange?.(true);
     try {
       const form = new FormData();
       form.append('file', file);
@@ -152,6 +159,7 @@ export function Editor() {
       toast({ title: 'Import failed', description: msg, variant: 'destructive' });
     } finally {
       setUploading(false);
+      onUploadingChange?.(false);
     }
   };
 
@@ -255,42 +263,14 @@ export function Editor() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <div className="p-6 border-b bg-card flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-bold text-primary flex items-center">
-            <ListChecks className="mr-2 h-5 w-5" />
-            Build Your Resume
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">Guide for Freshers &amp; Students</p>
-        </div>
-        <div className="flex items-center gap-1">
-          {/* Hidden file input */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf"
-            className="hidden"
-            onChange={handleResumeUpload}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            title="Import existing resume PDF"
-            className="gap-1.5 text-xs font-semibold text-primary border-primary/30 hover:bg-lavender-100 hover:bg-[#e9e4f7] hover:text-primary"
-          >
-            {uploading
-              ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Importing…</>
-              : <><Upload className="h-3.5 w-3.5" />Import PDF</>
-            }
-          </Button>
-          <Button variant="ghost" size="icon" onClick={resetData} title="Clear all data" className="text-muted-foreground hover:text-destructive">
-            <RefreshCcw className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
+      {/* Hidden file input — triggered from navbar */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf"
+        className="hidden"
+        onChange={handleResumeUpload}
+      />
       <div ref={editorRef} className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
         <Accordion type="single" collapsible className="w-full" value={activeSection ?? undefined} onValueChange={(val) => focusAndScroll(val)}>
 
@@ -733,4 +713,4 @@ export function Editor() {
       </div>
     </div>
   );
-}
+});
