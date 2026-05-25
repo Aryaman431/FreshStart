@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,9 @@ import {
   MapPin,
   Clock,
   ArrowUpRight,
-  Star
+  Star,
+  Play,
+  X
 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
@@ -118,7 +120,17 @@ export default function LandingPage() {
   const [text, setText] = useState('');
   const [selectedJob, setSelectedJob] = useState<typeof JOBS[0] | null>(null);
   const [infoModal, setInfoModal] = useState<string | null>(null);
+  const [demoOpen, setDemoOpen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const { isSignedIn, isLoaded } = useUser();
+
+  // Pause video when modal closes
+  useEffect(() => {
+    if (!demoOpen && videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  }, [demoOpen]);
   const staticPart = "Level Up Your ";
   const dynamicPart = "Resume in < 1 Min.";
   
@@ -169,6 +181,16 @@ export default function LandingPage() {
             <Link href="#success" className="hover:text-primary transition-colors">Success</Link>
           </div>
           <div className="flex items-center space-x-4">
+            {/* Watch Demo CTA */}
+            <button
+              onClick={() => setDemoOpen(true)}
+              className="hidden md:flex items-center gap-2 px-5 py-2.5 rounded-full border border-primary/30 bg-primary/5 text-primary font-bold text-sm hover:bg-primary/10 hover:scale-105 transition-all duration-200 group"
+            >
+              <span className="w-6 h-6 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Play className="h-3 w-3 text-white fill-white ml-0.5" />
+              </span>
+              Watch Demo
+            </button>
             {!isLoaded ? null : !isSignedIn ? (
               <SignInButton mode="modal">
                 <Button variant="ghost" className="font-bold text-muted-foreground hover:text-primary">
@@ -274,6 +296,124 @@ export default function LandingPage() {
                       <div className="bg-accent/10 border border-accent/20 text-accent px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
                         Top Rated
                       </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Demo Video Showcase ─────────────────────────────────────────── */}
+      <section className="relative py-32 overflow-hidden z-20">
+        {/* Background glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] bg-primary/10 rounded-full blur-[120px]" />
+          <div className="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[300px] bg-orange-400/10 rounded-full blur-[80px]" />
+        </div>
+
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-6xl mx-auto">
+
+            {/* LEFT — feature bullets */}
+            <div className="space-y-10 order-2 lg:order-1">
+              <div>
+                <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-black mb-6 border border-primary/20 uppercase tracking-widest">
+                  <Sparkles className="h-3 w-3 mr-2 animate-pulse" />
+                  See It In Action
+                </div>
+                <h2 className="text-4xl md:text-5xl font-black tracking-tight uppercase leading-[0.95] text-foreground mb-6">
+                  From Blank Page<br />
+                  <span className="text-primary">to Dream Job</span><br />
+                  in Minutes
+                </h2>
+                <p className="text-lg text-muted-foreground font-medium leading-relaxed">
+                  Watch how FreshStart transforms a blank canvas into a recruiter-ready resume — powered by AI, built for graduates.
+                </p>
+              </div>
+
+              <ul className="space-y-5">
+                {[
+                  { icon: <Zap className="h-5 w-5" />, title: "AI-Powered Writing", desc: "Generate bullet points, summaries, and cover letters instantly" },
+                  { icon: <Search className="h-5 w-5" />, title: "ATS Score & Gap Analysis", desc: "Know exactly how your resume ranks before you apply" },
+                  { icon: <Award className="h-5 w-5" />, title: "One-Click PDF Export", desc: "Professional LaTeX-quality output, every time" },
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground">{item.title}</p>
+                      <p className="text-sm text-muted-foreground font-medium">{item.desc}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={() => setDemoOpen(true)}
+                className="flex items-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-primary to-violet-600 text-white font-bold text-base shadow-[0_20px_60px_-10px_rgba(124,58,237,0.5)] hover:scale-105 hover:shadow-[0_30px_80px_-10px_rgba(124,58,237,0.6)] transition-all duration-300 group"
+              >
+                <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Play className="h-4 w-4 fill-white ml-0.5" />
+                </span>
+                Watch Full Demo
+                <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+
+            {/* RIGHT — floating video preview card */}
+            <div className="relative order-1 lg:order-2 flex justify-center">
+              {/* Outer glow ring */}
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/30 via-violet-500/20 to-orange-400/20 blur-2xl scale-105 animate-pulse" />
+
+              {/* Card */}
+              <div
+                className="relative w-full max-w-lg rounded-3xl overflow-hidden cursor-pointer group
+                  border border-white/20 shadow-[0_40px_100px_-20px_rgba(124,58,237,0.4)]
+                  bg-gradient-to-br from-slate-900/90 via-slate-800/80 to-slate-900/90
+                  backdrop-blur-xl
+                  hover:scale-[1.02] hover:shadow-[0_60px_120px_-20px_rgba(124,58,237,0.55)]
+                  transition-all duration-500"
+                onClick={() => setDemoOpen(true)}
+                style={{ animation: 'floatCard 4s ease-in-out infinite' }}
+              >
+                {/* Gradient border shimmer */}
+                <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/20 via-transparent to-orange-400/10 pointer-events-none z-10" />
+
+                {/* Video thumbnail — first frame via muted autoplay */}
+                <video
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="w-full aspect-video object-cover opacity-80 group-hover:opacity-90 transition-opacity"
+                  src="/Freshdemo.mp4#t=0.1"
+                />
+
+                {/* Play overlay */}
+                <div className="absolute inset-0 flex items-center justify-center z-20">
+                  <div className="relative">
+                    {/* Pulse rings */}
+                    <div className="absolute inset-0 rounded-full bg-white/20 animate-ping scale-150" />
+                    <div className="absolute inset-0 rounded-full bg-white/10 animate-pulse scale-[2]" />
+                    {/* Play button */}
+                    <div className="relative w-20 h-20 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-2xl group-hover:scale-110 group-hover:bg-white transition-all duration-300">
+                      <Play className="h-8 w-8 text-primary fill-primary ml-1" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom label */}
+                <div className="absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-black/80 to-transparent z-20">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-white font-black text-sm uppercase tracking-widest">FreshStart Demo</p>
+                      <p className="text-white/60 text-xs font-medium">Full walkthrough</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/80 backdrop-blur-sm">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                      <span className="text-white text-xs font-bold">LIVE</span>
                     </div>
                   </div>
                 </div>
@@ -490,6 +630,53 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* ── Demo Video Modal ────────────────────────────────────────────── */}
+      {demoOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8"
+          style={{ animation: 'fadeIn 0.2s ease-out' }}
+        >
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/75 backdrop-blur-md"
+            onClick={() => setDemoOpen(false)}
+          />
+          {/* Modal panel */}
+          <div
+            className="relative w-full max-w-4xl rounded-3xl overflow-hidden shadow-[0_60px_120px_-20px_rgba(0,0,0,0.8)] border border-white/10"
+            style={{ animation: 'scaleIn 0.25s cubic-bezier(0.34,1.56,0.64,1)' }}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setDemoOpen(false)}
+              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 hover:scale-110 transition-all"
+              aria-label="Close demo"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Top bar */}
+            <div className="h-10 w-full bg-[#B8A9FF]/20 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_30px_rgba(180,160,255,0.08)] flex items-center justify-center">
+              <span className="text-sm font-medium text-purple-200/80 tracking-wide">FreshStart Demo</span>
+            </div>
+
+            {/* Video */}
+            <div className="bg-black">
+              <video
+                ref={videoRef}
+                controls
+                autoPlay
+                playsInline
+                className="w-full rounded-b-3xl shadow-2xl"
+              >
+                <source src="/Freshdemo.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Info Modals ─────────────────────────────────────────────────── */}
       <Dialog open={!!infoModal} onOpenChange={(open) => !open && setInfoModal(null)}>
