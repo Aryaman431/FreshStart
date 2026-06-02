@@ -5,6 +5,8 @@ import { X, Loader2, TrendingUp, CheckCircle2, AlertCircle, Info } from 'lucide-
 import { ResumeData } from '@/types/resume';
 import { scoreResume, ResumeScoreOutput } from '@/ai/flows/ai-score-resume';
 import { resumeToText } from '@/lib/resume-to-text';
+import { useUser } from '@clerk/nextjs';
+import { trackEvent } from '@/lib/analytics';
 
 interface ScoreModalProps {
   data: ResumeData;
@@ -83,6 +85,7 @@ export function ScoreModal({ data, onClose }: ScoreModalProps) {
   const [result, setResult] = useState<ResumeScoreOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const { user } = useUser();
 
   useEffect(() => { requestAnimationFrame(() => setVisible(true)); }, []);
 
@@ -95,7 +98,12 @@ export function ScoreModal({ data, onClose }: ScoreModalProps) {
   useEffect(() => {
     const resumeText = resumeToText(data);
     scoreResume(resumeText)
-      .then(setResult)
+      .then(r => {
+        setResult(r);
+        if (user) {
+          trackEvent({ userId: user.id, email: user.primaryEmailAddress?.emailAddress, event: 'ats_check', metadata: { score: r.overallScore } });
+        }
+      })
       .catch(() => setError('Failed to generate score. Please try again.'))
       .finally(() => setLoading(false));
   }, []);

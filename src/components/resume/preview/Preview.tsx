@@ -11,10 +11,11 @@ import { JobToolsModal } from './JobToolsModal';
 import { ToolsPanel, VersionsPanel } from '../tools/ToolsPanel';
 import { downloadResumePdf } from './downloadPdf';
 import { useUser, SignInButton } from '@clerk/nextjs';
+import { trackEvent } from '@/lib/analytics';
 
 export function Preview() {
   const { data, activeSection } = useResume();
-  const { isSignedIn, isLoaded } = useUser();
+  const { isSignedIn, isLoaded, user } = useUser();
   const [isDownloading, setIsDownloading] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showScoreModal, setShowScoreModal] = useState(false);
@@ -29,6 +30,9 @@ export function Preview() {
     setIsDownloading(true);
     try {
       await downloadResumePdf(data);
+      if (user) {
+        trackEvent({ userId: user.id, email: user.primaryEmailAddress?.emailAddress, event: 'pdf_download' });
+      }
     } catch (err) {
       console.error('PDF generation failed:', err);
     } finally {

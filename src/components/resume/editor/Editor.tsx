@@ -15,6 +15,8 @@ import { MonthYearPicker } from './MonthYearPicker';
 import { BulletImprover } from './BulletImprover';
 import { useToast } from '@/hooks/use-toast';
 import { normalizeDatePair } from '@/lib/normalize-date';
+import { useUser } from '@clerk/nextjs';
+import { trackEvent } from '@/lib/analytics';
 
 // ── Phone sanitizer ───────────────────────────────────────────────────────────
 function sanitizePhone(phone: string = ''): string {
@@ -51,6 +53,7 @@ export const Editor = forwardRef<EditorHandle, { onUploadingChange?: (v: boolean
   const { data, updateData, resetData, setActiveSection, activeSection } = useResume();
   const { saveVersion } = useVersions();
   const { toast } = useToast();
+  const { user } = useUser();
   const editorRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [scrollTrigger, setScrollTrigger] = React.useState(0);
@@ -146,6 +149,9 @@ export const Editor = forwardRef<EditorHandle, { onUploadingChange?: (v: boolean
       };
 
       updateData(imported);
+      if (user) {
+        trackEvent({ userId: user.id, email: user.primaryEmailAddress?.emailAddress, event: 'resume_import' });
+      }
       toast({
         title: '✓ Resume imported',
         description: hasExistingData

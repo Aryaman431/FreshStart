@@ -122,7 +122,7 @@ export default function LandingPage() {
   const [infoModal, setInfoModal] = useState<string | null>(null);
   const [demoOpen, setDemoOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { isSignedIn, isLoaded } = useUser();
+  const { isSignedIn, isLoaded, user } = useUser();
 
   // Pause video when modal closes
   useEffect(() => {
@@ -193,12 +193,21 @@ export default function LandingPage() {
             </button>
             {!isLoaded ? null : !isSignedIn ? (
               <SignInButton mode="modal">
-                <Button variant="ghost" className="font-bold text-muted-foreground hover:text-primary">
+                <Button variant="ghost" className="font-bold text-muted-foreground hover:text-muted-foreground hover:bg-accent/10">
                   Login
                 </Button>
               </SignInButton>
             ) : (
-              <UserButton />
+              <>
+                {user?.primaryEmailAddress?.emailAddress === 'aryamanzip@gmail.com' && (
+                  <Link href="/admin">
+                    <Button variant="ghost" size="sm" className="font-bold text-violet-600 hover:bg-violet-50 hover:text-violet-700 rounded-full px-4">
+                      Admin
+                    </Button>
+                  </Link>
+                )}
+                <UserButton />
+              </>
             )}
             <Button size="lg" asChild className="rounded-full px-8 bg-primary hover:bg-primary/90 text-white font-bold shadow-xl shadow-primary/20">
               <Link href="/builder">Build My Future</Link>

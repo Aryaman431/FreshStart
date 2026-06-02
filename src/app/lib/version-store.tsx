@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { useUser } from '@clerk/nextjs';
 import { ResumeData, initialResumeData } from '@/types/resume';
 import { supabase } from '@/lib/supabase';
+import { trackEvent } from '@/lib/analytics';
 
 export interface ResumeVersion {
   id: string;
@@ -79,6 +80,7 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (error) console.error('Failed to save version:', error.message);
+    else trackEvent({ userId: user.id, email: user.primaryEmailAddress?.emailAddress, event: 'version_create' });
   }, [user]);
 
   // ── Delete a version ──────────────────────────────────────────────────────
