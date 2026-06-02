@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FileUser, Eye, EyeOff, Loader2, ShieldCheck, AlertCircle } from 'lucide-react';
 
-export default function AdminLoginPage() {
+function AdminLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [username, setUsername] = useState('');
@@ -12,9 +12,6 @@ export default function AdminLoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => { setMounted(true); }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,8 +41,81 @@ export default function AdminLoginPage() {
     }
   };
 
-  if (!mounted) return null;
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Username */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+          Username
+        </label>
+        <input
+          type="text"
+          value={username}
+          onChange={e => setUsername(e.target.value)}
+          placeholder="Enter admin username"
+          autoComplete="username"
+          required
+          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 text-sm font-medium focus:outline-none focus:border-violet-500/60 transition-all"
+        />
+      </div>
 
+      {/* Password */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+          Password
+        </label>
+        <div className="relative">
+          <input
+            type={showPass ? 'text' : 'password'}
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder="Enter admin password"
+            autoComplete="current-password"
+            required
+            className="w-full px-4 py-3 pr-11 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 text-sm font-medium focus:outline-none focus:border-violet-500/60 transition-all"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPass(v => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+            tabIndex={-1}
+          >
+            {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="flex items-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+          <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
+          <p className="text-sm text-red-400 font-medium">{error}</p>
+        </div>
+      )}
+
+      {/* Submit */}
+      <button
+        type="submit"
+        disabled={loading || !username || !password}
+        className="w-full py-3 px-6 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 disabled:from-slate-700 disabled:to-slate-700 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 transition-all duration-200 flex items-center justify-center gap-2"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Authenticating…
+          </>
+        ) : (
+          <>
+            <ShieldCheck className="h-4 w-4" />
+            Access Admin Portal
+          </>
+        )}
+      </button>
+    </form>
+  );
+}
+
+export default function AdminLoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-violet-950 to-slate-900 p-4 relative overflow-hidden">
       {/* Background glow orbs */}
@@ -71,80 +141,17 @@ export default function AdminLoginPage() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Username */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                Username
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                placeholder="Enter admin username"
-                autoComplete="username"
-                required
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 text-sm font-medium focus:outline-none focus:border-violet-500/60 focus:bg-white/8 transition-all"
-              />
+          {/* Form — wrapped in Suspense because it uses useSearchParams */}
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="h-6 w-6 animate-spin text-violet-400" />
             </div>
+          }>
+            <AdminLoginForm />
+          </Suspense>
 
-            {/* Password */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPass ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="Enter admin password"
-                  autoComplete="current-password"
-                  required
-                  className="w-full px-4 py-3 pr-11 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 text-sm font-medium focus:outline-none focus:border-violet-500/60 focus:bg-white/8 transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Error */}
-            {error && (
-              <div className="flex items-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-                <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
-                <p className="text-sm text-red-400 font-medium">{error}</p>
-              </div>
-            )}
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading || !username || !password}
-              className="w-full py-3 px-6 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 disabled:from-slate-700 disabled:to-slate-700 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 transition-all duration-200 flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Authenticating…
-                </>
-              ) : (
-                <>
-                  <ShieldCheck className="h-4 w-4" />
-                  Access Admin Portal
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Footer note */}
           <p className="text-center text-xs text-slate-600 mt-6">
-            This portal is restricted to authorized administrators only.
+            Restricted to authorized administrators only.
           </p>
         </div>
       </div>

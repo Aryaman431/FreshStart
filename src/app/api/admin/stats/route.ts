@@ -11,14 +11,14 @@ export async function GET(req: NextRequest) {
 
   const client = await clerkClient();
 
-  const [{ totalCount: totalUsers }, resumesRes, versionsRes] = await Promise.all([
+  const [totalUsers, resumesRes, versionsRes] = await Promise.all([
     client.users.getCount(),
     supabaseAdmin.from('resumes').select('user_id', { count: 'exact', head: true }),
     supabaseAdmin.from('resume_versions').select('id', { count: 'exact', head: true }),
   ]);
 
   return NextResponse.json({
-    totalUsers,
+    totalUsers: Number(totalUsers),
     totalResumes: resumesRes.count ?? 0,
     totalVersions: versionsRes.count ?? 0,
   });
