@@ -1,8 +1,10 @@
+import Script from "next/script";
 import type {Metadata} from 'next';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { SupabaseAuthProvider } from '@/lib/use-supabase-auth';
 import { ClerkProvider } from '@clerk/nextjs';
+import { SubscriptionProvider } from '@/lib/use-subscription';
 
 export const metadata: Metadata = {
   title: 'FreshStart | AI Resume Builder for Students',
@@ -53,10 +55,16 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased selection:bg-accent/30">
         <SupabaseAuthProvider>
-          <FirebaseClientProvider>
-            {children}
-          </FirebaseClientProvider>
+          <SubscriptionProvider>
+            <FirebaseClientProvider>
+              {children}
+            </FirebaseClientProvider>
+          </SubscriptionProvider>
         </SupabaseAuthProvider>
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
     </ClerkProvider>

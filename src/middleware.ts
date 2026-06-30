@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { isAdminAuthenticatedFromRequest } from '@/lib/admin-session';
 
 // ── Route matchers ────────────────────────────────────────────────────────────
-const isPublicRoute      = createRouteMatcher(['/', '/login(.*)', '/sign-in(.*)', '/sign-up(.*)']);
+const isPublicRoute      = createRouteMatcher(['/', '/login(.*)', '/sign-in(.*)', '/sign-up(.*)', '/pricing']);
 const isAdminLoginRoute  = createRouteMatcher(['/admin-login', '/admin-login/(.*)']);
 const isAdminPortalRoute = createRouteMatcher(['/admin', '/admin/(.*)', '/api/admin(.*)']);
 

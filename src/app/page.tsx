@@ -23,11 +23,35 @@ import {
   ArrowUpRight,
   Star,
   Play,
-  X
+  X,
+  Crown
 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
 import { useUser, UserButton, SignInButton } from '@clerk/nextjs';
+import { useSubscription } from '@/lib/use-subscription';
+
+// ── Plan badge shown in navbar when signed in ─────────────────────────────────
+function PlanBadgeInNav() {
+  const { isPro, plan, isLoading } = useSubscription();
+  if (isLoading || !plan) return null;
+  if (isPro) {
+    return (
+      <Link href="/profile">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-violet-600 to-purple-600 text-white text-[10px] font-black cursor-pointer hover:scale-105 transition-transform shadow-sm">
+          <Crown className="h-3 w-3" />PRO
+        </span>
+      </Link>
+    );
+  }
+  return (
+    <Link href="/profile">
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold border border-slate-200 cursor-pointer hover:bg-violet-50 hover:text-violet-600 hover:border-violet-200 transition-colors">
+        Free
+      </span>
+    </Link>
+  );
+}
 
 const JOBS = [
   {
@@ -179,6 +203,10 @@ export default function LandingPage() {
               </button>
             </div>
             <Link href="#success" className="hover:text-primary transition-colors">Success</Link>
+            <Link href="/pricing" className="hover:text-primary transition-colors flex items-center gap-1.5">
+              <Crown className="h-3.5 w-3.5 text-violet-500" />
+              Pricing
+            </Link>
           </div>
           <div className="flex items-center space-x-4">
             {/* Watch Demo CTA */}
@@ -206,6 +234,7 @@ export default function LandingPage() {
                     </Button>
                   </Link>
                 )}
+                <PlanBadgeInNav />
                 <UserButton />
               </>
             )}

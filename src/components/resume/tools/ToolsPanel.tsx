@@ -4,7 +4,7 @@ import React, { useState, useCallback } from 'react';
 import {
   Target, Briefcase, History, FileText,
   Loader2, ChevronDown, ChevronUp, Check,
-  AlertCircle, Copy, Trash2, Clock, Plus,
+  AlertCircle, Copy, Trash2, Clock, Plus, Crown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,6 +16,8 @@ import { matchKeywords, KeywordMatchResult } from '@/lib/keyword-match';
 import { tailorToJob, TailorOutput } from '@/ai/flows/ai-tailor-to-job';
 import { generateCoverLetter, CoverLetterOutput } from '@/ai/flows/ai-cover-letter';
 import { useUser, SignInButton } from '@clerk/nextjs';
+import { PaywallModal } from '@/components/paywall';
+import { useSubscription } from '@/lib/use-subscription';
 
 // ─── Tab types ────────────────────────────────────────────────────────────────
 type Tab = 'match' | 'tailor' | 'cover';
@@ -127,12 +129,26 @@ function TailorTab() {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
   const [copied, setCopied] = useState<number | null>(null);
   const [added, setAdded] = useState<number | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const { usage, isPro, refresh: refreshSub } = useSubscription();
 
   const run = async () => {
     if (!jd.trim()) return;
     setLoading(true); setError(''); setResult(null);
+
     try {
+      const usageRes = await fetch('/api/usage/tailor', { method: 'POST' });
+
+      if (usageRes.status === 429) {
+        setShowPaywall(true);
+        setLoading(false);
+        return;
+      }
+
+      if (!usageRes.ok) throw new Error('Usage check failed');
+
       setResult(await tailorToJob(resumeToText(data), jd));
+      await refreshSub();
     } catch {
       setError('Analysis failed. Please try again.');
     } finally {
@@ -168,6 +184,33 @@ function TailorTab() {
 
   return (
     <div className="space-y-4">
+      {/* Paywall */}
+      {showPaywall && (
+        <PaywallModal
+          feature="tailor"
+          onClose={() => setShowPaywall(false)}
+          onUpgradeSuccess={() => {
+            setShowPaywall(false);
+            run();
+          }}
+        />
+      )}
+
+      {/* Usage badge row */}
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Tailor to Job</span>
+        {!isPro && usage.tailor && (
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-600 border border-violet-200">
+            {usage.tailor.remaining ?? 0} uses left today
+          </span>
+        )}
+        {isPro && (
+          <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200">
+            <Crown className="h-3 w-3" />Unlimited
+          </span>
+        )}
+      </div>
+
       <JDInput value={jd} onChange={setJd} />
       <Button onClick={run} disabled={loading || !jd.trim()} className="w-full gap-2" size="sm">
         {loading ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Analysing…</> : <><Briefcase className="h-3.5 w-3.5" />Tailor Resume</>}

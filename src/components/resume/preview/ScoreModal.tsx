@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Loader2, TrendingUp, CheckCircle2, AlertCircle, Info } from 'lucide-react';
+import { X, Loader2, TrendingUp, CheckCircle2, AlertCircle, Info, Crown } from 'lucide-react';
 import { ResumeData } from '@/types/resume';
 import { scoreResume, ResumeScoreOutput } from '@/ai/flows/ai-score-resume';
 import { resumeToText } from '@/lib/resume-to-text';
 import { useUser } from '@clerk/nextjs';
 import { trackEvent } from '@/lib/analytics';
+import { PaywallModal } from '@/components/paywall';
+import { useSubscription } from '@/lib/use-subscription';
 
 interface ScoreModalProps {
   data: ResumeData;
@@ -84,8 +86,10 @@ export function ScoreModal({ data, onClose }: ScoreModalProps) {
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<ResumeScoreOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const { user } = useUser();
+  const { usage, isPro, refresh: refreshSub } = useSubscription();
 
   useEffect(() => { requestAnimationFrame(() => setVisible(true)); }, []);
 
@@ -96,17 +100,40 @@ export function ScoreModal({ data, onClose }: ScoreModalProps) {
   }, []);
 
   useEffect(() => {
-    const resumeText = resumeToText(data);
-    scoreResume(resumeText)
-      .then(r => {
-        setResult(r);
-        if (user) {
-          trackEvent({ userId: user.id, email: user.primaryEmailAddress?.emailAddress, event: 'ats_check', metadata: { score: r.overallScore } });
-        }
-      })
-      .catch(() => setError('Failed to generate score. Please try again.'))
-      .finally(() => setLoading(false));
+    runScoreCheck();
   }, []);
+
+  async function runScoreCheck() {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Check usage limit server-side
+      const usageRes = await fetch('/api/usage/ats', { method: 'POST' });
+
+      if (usageRes.status === 429) {
+        // Limit hit — show paywall instead
+        setLoading(false);
+        setShowPaywall(true);
+        return;
+      }
+
+      if (!usageRes.ok) throw new Error('Usage check failed');
+
+      // Proceed with AI call
+      const resumeText = resumeToText(data);
+      const r = await scoreResume(resumeText);
+      setResult(r);
+      await refreshSub();
+      if (user) {
+        trackEvent({ userId: user.id, email: user.primaryEmailAddress?.emailAddress, event: 'ats_check', metadata: { score: r.overallScore } });
+      }
+    } catch {
+      setError('Failed to generate score. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleClose = () => { setVisible(false); setTimeout(onClose, 200); };
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -118,6 +145,20 @@ export function ScoreModal({ data, onClose }: ScoreModalProps) {
     : result.overallScore >= 50 ? '#f59e0b'
     : '#ef4444'
     : '#6366f1';
+
+  // Show paywall overlay instead of modal when limit hit
+  if (showPaywall) {
+    return (
+      <PaywallModal
+        feature="ats"
+        onClose={onClose}
+        onUpgradeSuccess={() => {
+          setShowPaywall(false);
+          runScoreCheck();
+        }}
+      />
+    );
+  }
 
   return (
     <div
@@ -138,6 +179,17 @@ export function ScoreModal({ data, onClose }: ScoreModalProps) {
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-purple-600" />
             <span className="font-bold text-slate-800 text-base">Resume Score</span>
+            {/* Usage badge */}
+            {!isPro && usage.ats && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-600 border border-violet-200">
+                {usage.ats.remaining ?? 0} left today
+              </span>
+            )}
+            {isPro && (
+              <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200">
+                <Crown className="h-3 w-3" />Pro
+              </span>
+            )}
           </div>
           <button onClick={handleClose} className="p-1.5 rounded-full hover:bg-purple-100 text-slate-500 transition-colors">
             <X className="h-4 w-4" />

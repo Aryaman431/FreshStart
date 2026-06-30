@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { X, Loader2, Briefcase, BookOpen, ChevronDown, ChevronUp, Check, AlertCircle, Sparkles, Plus } from 'lucide-react';
+import { X, Loader2, Briefcase, BookOpen, ChevronDown, ChevronUp, Check, AlertCircle, Sparkles, Plus, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ResumeData } from '@/types/resume';
@@ -9,6 +9,8 @@ import { resumeToText } from '@/lib/resume-to-text';
 import { tailorToJob, TailorOutput } from '@/ai/flows/ai-tailor-to-job';
 import { generateInterviewPrep, InterviewPrepOutput } from '@/ai/flows/ai-interview-prep';
 import { useResume } from '@/app/lib/resume-store';
+import { PaywallModal } from '@/components/paywall';
+import { useSubscription } from '@/lib/use-subscription';
 
 interface JobToolsModalProps {
   data: ResumeData;
@@ -50,13 +52,28 @@ function TailorView({ resumeText }: { resumeText: string }) {
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
   const [addedKeywords, setAddedKeywords] = useState<string[]>([]);
   const [addedFeedback, setAddedFeedback] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const { usage, isPro, refresh: refreshSub } = useSubscription();
 
   const run = async () => {
     if (!jd.trim()) return;
     setLoading(true); setError(''); setResult(null);
     setSelectedKeywords([]); setAddedKeywords([]);
+
     try {
+      // Check usage server-side
+      const usageRes = await fetch('/api/usage/tailor', { method: 'POST' });
+
+      if (usageRes.status === 429) {
+        setShowPaywall(true);
+        setLoading(false);
+        return;
+      }
+
+      if (!usageRes.ok) throw new Error('Usage check failed');
+
       setResult(await tailorToJob(resumeText, jd));
+      await refreshSub();
     } catch {
       setError('Failed to analyse. Please try again.');
     } finally {
@@ -127,9 +144,34 @@ function TailorView({ resumeText }: { resumeText: string }) {
 
   return (
     <div className="space-y-4 pb-20"> {/* pb-20 reserves space for sticky CTA */}
+      {/* Paywall overlay */}
+      {showPaywall && (
+        <PaywallModal
+          feature="tailor"
+          onClose={() => setShowPaywall(false)}
+          onUpgradeSuccess={() => {
+            setShowPaywall(false);
+            run();
+          }}
+        />
+      )}
+
       {/* JD input */}
       <div className="bg-white/85 backdrop-blur-xl rounded-xl border border-white/30 shadow-[0_4px_20px_rgba(0,0,0,0.06)] p-4 space-y-2">
-        <label className="text-sm font-semibold text-gray-700 block mb-1">Paste the job description</label>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-sm font-semibold text-gray-700 block">Paste the job description</label>
+          {/* Usage badge */}
+          {!isPro && usage.tailor && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-600 border border-violet-200">
+              {usage.tailor.remaining ?? 0} uses left today
+            </span>
+          )}
+          {isPro && (
+            <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200">
+              <Crown className="h-3 w-3" />Unlimited
+            </span>
+          )}
+        </div>
         <Textarea
           value={jd}
           onChange={e => setJd(e.target.value)}
