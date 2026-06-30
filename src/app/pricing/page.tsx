@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   FileUser,
   Check,
@@ -185,6 +186,7 @@ function PricingCard({
 export default function PricingPage() {
   // ── Fix: destructure `user` so prefill works in Razorpay Checkout ──────────
   const { isSignedIn, isLoaded, user } = useUser();
+  const pathname = usePathname();
   const { plan: currentPlan, isLoading: subLoading, refresh } = useSubscription();
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
@@ -289,7 +291,7 @@ export default function PricingPage() {
 
           <div className="flex items-center gap-3">
             {!isLoaded ? null : !isSignedIn ? (
-              <SignInButton mode="modal">
+              <SignInButton mode="modal" forceRedirectUrl={pathname}>
                 <Button variant="ghost" className="font-bold text-sm">Login</Button>
               </SignInButton>
             ) : (
@@ -348,7 +350,7 @@ export default function PricingPage() {
               <p className="text-slate-500 text-sm font-medium mb-2">
                 Sign in to upgrade to Pro
               </p>
-              <SignInButton mode="modal">
+              <SignInButton mode="modal" forceRedirectUrl={pathname}>
                 <Button className="rounded-full px-6 text-sm bg-violet-600 hover:bg-violet-700 text-white font-bold">
                   Sign In to Upgrade
                 </Button>

@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider signInForceRedirectUrl="/builder" signUpForceRedirectUrl="/builder">
+    <ClerkProvider signInFallbackRedirectUrl="/builder" signUpFallbackRedirectUrl="/builder">
     <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -7,24 +7,36 @@ import { VersionProvider } from '@/app/lib/version-store';
 import { Editor, EditorHandle } from '@/components/resume/editor/Editor';
 import { Preview } from '@/components/resume/preview/Preview';
 import { Button } from '@/components/ui/button';
-import { FileUser, ArrowLeft, UserCircle, Loader2, Upload, RefreshCcw, ListChecks } from 'lucide-react';
+import { FileUser, ArrowLeft, UserCircle, Loader2, Upload, RefreshCcw, ListChecks, Crown } from 'lucide-react';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
 import { signInAsGuest } from '@/lib/use-supabase-auth';
 import { useUser, UserButton, SignInButton } from '@clerk/nextjs';
+import { useSubscription } from '@/lib/use-subscription';
+import { PaywallModal } from '@/components/paywall/PaywallModal';
 
 function BuilderContent() {
   const isMobile = useIsMobile();
   const [mounted, setMounted] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
+  const [showPaywall, setShowPaywall] = React.useState(false);
   const { isLoading: isDataLoading, resetData } = useResume();
   const { isSignedIn, user: clerkUser, isLoaded } = useUser();
+  const { isPro, isLoading: subLoading } = useSubscription();
   const editorRef = React.useRef<EditorHandle>(null);
 
   React.useEffect(() => { setMounted(true); }, []);
 
   const handleQuickStart = () => signInAsGuest();
+
+  const handlePremiumClick = () => {
+    if (isPro) {
+      window.location.href = '/pricing';
+    } else {
+      setShowPaywall(true);
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-background print:h-auto print:overflow-visible geometric-pattern">
@@ -81,8 +93,21 @@ function BuilderContent() {
           </div>
         </div>
 
-        {/* RIGHT: back + auth */}
+        {/* RIGHT: premium + back + auth */}
         <div className="flex items-center space-x-3">
+          {/* Premium button — shown once subscription is loaded */}
+          {isLoaded && !subLoading && (
+            <button
+              onClick={handlePremiumClick}
+              className="hidden sm:flex items-center gap-1.5 h-8 px-3 rounded-full text-xs font-black text-white transition-all hover:scale-[1.04] active:scale-[0.97] shadow-md shadow-violet-900/30"
+              style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)' }}
+              title={isPro ? 'You are on Pro — view plan' : 'Upgrade to Pro'}
+            >
+              <Crown className="h-3.5 w-3.5 text-yellow-300 fill-yellow-300" />
+              {isPro ? 'Pro' : 'Premium'}
+            </button>
+          )}
+
           <Button variant="default" size="sm" asChild className="bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 transition-all rounded-full px-4 h-8 text-xs">
             <Link href="/">
               <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
@@ -146,6 +171,15 @@ function BuilderContent() {
           </div>
         )}
       </main>
+
+      {/* Paywall modal — opened by Premium button */}
+      {showPaywall && (
+        <PaywallModal
+          feature="general"
+          onClose={() => setShowPaywall(false)}
+          onUpgradeSuccess={() => setShowPaywall(false)}
+        />
+      )}
     </div>
   );
 }
