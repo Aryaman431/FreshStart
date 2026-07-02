@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Users, FileText, GitBranch } from 'lucide-react';
+import { Users, FileText, GitBranch, Crown } from 'lucide-react';
 
 interface Stats {
   totalUsers: number;
@@ -113,6 +113,18 @@ export default function AdminOverview() {
           <div>
             <p className="text-sm font-bold text-white group-hover:text-blue-300 transition-colors">Browse Resumes</p>
             <p className="text-xs text-slate-500">View all resumes and version history</p>
+          </div>
+        </a>
+        <a
+          href="/admin/subscriptions"
+          className="flex items-center gap-4 bg-slate-800/40 hover:bg-slate-800/70 border border-white/5 hover:border-yellow-500/30 rounded-2xl p-5 transition-all duration-200 group"
+        >
+          <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center shrink-0">
+            <Crown className="h-5 w-5 text-yellow-400" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-white group-hover:text-yellow-300 transition-colors">Subscriptions</p>
+            <p className="text-xs text-slate-500">Manage plans, upgrades and downgrades</p>
           </div>
         </a>
       </div>

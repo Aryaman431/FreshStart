@@ -334,7 +334,7 @@ export default function PricingPage() {
             />
             <PricingCard
               plan="Pro"
-              price="₹499"
+              price="₹1.99"
               period="month"
               features={PRO_FEATURES}
               isPro={true}

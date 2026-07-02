@@ -223,7 +223,7 @@ export function PaywallModal({ feature = 'general', onClose, onUpgradeSuccess }:
                 <h3 className="text-lg font-black text-white">Pro</h3>
               </div>
               <div className="flex items-end gap-1 mb-4">
-                <span className="text-3xl font-black text-white">₹499</span>
+                <span className="text-3xl font-black text-white">₹1.99</span>
                 <span className="text-white/60 text-sm mb-1">/month</span>
               </div>
               <ul className="space-y-2.5">

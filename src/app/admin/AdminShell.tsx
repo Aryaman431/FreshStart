@@ -12,13 +12,15 @@ import {
   ChevronRight,
   LogOut,
   Shield,
+  Crown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const NAV = [
-  { href: '/admin',         label: 'Overview', icon: LayoutDashboard },
-  { href: '/admin/users',   label: 'Users',    icon: Users },
-  { href: '/admin/resumes', label: 'Resumes',  icon: FileText },
+  { href: '/admin',                  label: 'Overview',      icon: LayoutDashboard },
+  { href: '/admin/users',            label: 'Users',         icon: Users },
+  { href: '/admin/resumes',          label: 'Resumes',       icon: FileText },
+  { href: '/admin/subscriptions',    label: 'Subscriptions', icon: Crown },
 ];
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {

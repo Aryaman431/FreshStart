@@ -3,9 +3,18 @@ import { NextResponse } from 'next/server';
 import { isAdminAuthenticatedFromRequest } from '@/lib/admin-session';
 
 // ── Route matchers ────────────────────────────────────────────────────────────
-const isPublicRoute      = createRouteMatcher(['/', '/login(.*)', '/sign-in(.*)', '/sign-up(.*)', '/pricing']);
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/login(.*)',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/pricing',
+  '/api/admin-auth/(.*)',  // admin login endpoint — must be reachable unauthenticated
+]);
 const isAdminLoginRoute  = createRouteMatcher(['/admin-login', '/admin-login/(.*)']);
-const isAdminPortalRoute = createRouteMatcher(['/admin', '/admin/(.*)', '/api/admin(.*)']);
+// Note: /api/admin-auth(.*) is intentionally excluded — it must be publicly
+// reachable so the login form can POST credentials without being redirected.
+const isAdminPortalRoute = createRouteMatcher(['/admin', '/admin/(.*)', '/api/admin/(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
   const { pathname } = req.nextUrl;

@@ -319,7 +319,7 @@ export default function ProfilePage() {
                   {upgradeLoading ? (
                     <><Loader2 className="h-4 w-4 animate-spin" />Processing…</>
                   ) : (
-                    <><Zap className="h-4 w-4 text-yellow-500" />Upgrade to Pro — ₹499/mo<ArrowRight className="h-4 w-4" /></>
+                    <><Zap className="h-4 w-4 text-yellow-500" />Upgrade to Pro — ₹1.99/mo<ArrowRight className="h-4 w-4" /></>
                   )}
                 </button>
                 {upgradeError && (

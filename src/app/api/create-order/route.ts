@@ -7,7 +7,7 @@ import { auth } from '@clerk/nextjs/server';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const Razorpay = require('razorpay') as typeof import('razorpay');
 
-const AMOUNT_PAISE = 49900; // ₹499 in paise
+const AMOUNT_PAISE = 199; // ₹1.99 in paise — TEST PRICE (change back to 49900 for production)
 
 export async function POST(_req: NextRequest) {
   // ── Step 1: Verify env vars exist ──────────────────────────────────────────
