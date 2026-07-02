@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useUser, SignInButton, UserButton } from '@clerk/nextjs';
 import { useSubscription } from '@/lib/use-subscription';
+import { useRazorpay } from '@/hooks/use-razorpay';
 
 const FREE_FEATURES = [
   'Resume Builder',
@@ -188,12 +189,17 @@ export default function PricingPage() {
   const { isSignedIn, isLoaded, user } = useUser();
   const pathname = usePathname();
   const { plan: currentPlan, isLoading: subLoading, refresh } = useSubscription();
+  const { ready: sdkReady } = useRazorpay();
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
   const [upgradeError, setUpgradeError] = useState('');
 
   const handleUpgrade = async () => {
     if (!isSignedIn) return;
+    if (!sdkReady || !(window as any).Razorpay) {
+      setUpgradeError('Payment system is still loading. Please wait a moment and try again.');
+      return;
+    }
     setUpgradeLoading(true);
     setUpgradeError('');
 
@@ -255,10 +261,12 @@ export default function PricingPage() {
         };
 
         const rzp = new (window as any).Razorpay(options);
+        console.log('[Razorpay] Creating checkout…');
         rzp.on('payment.failed', (resp: { error: { description: string } }) => {
           reject(new Error(resp.error?.description ?? 'Payment failed. Please try again.'));
         });
         rzp.open();
+        console.log('[Razorpay] Checkout opened');
       });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Something went wrong.';
@@ -340,7 +348,7 @@ export default function PricingPage() {
               isPro={true}
               current={isProPlan && !subLoading}
               onUpgrade={isSignedIn ? handleUpgrade : undefined}
-              loading={upgradeLoading}
+              loading={upgradeLoading || !sdkReady}
               success={upgradeSuccess}
             />
           </div>

@@ -10,6 +10,7 @@ import React, { useState } from 'react';
 import { X, Zap, CheckCircle2, Sparkles, ArrowRight, Loader2, Crown } from 'lucide-react';
 import { useSubscription } from '@/lib/use-subscription';
 import { useUser } from '@clerk/nextjs';
+import { useRazorpay } from '@/hooks/use-razorpay';
 
 interface PaywallModalProps {
   /** Which feature triggered the paywall */
@@ -46,11 +47,21 @@ const PRO_FEATURES = [
 export function PaywallModal({ feature = 'general', onClose, onUpgradeSuccess }: PaywallModalProps) {
   const { refresh } = useSubscription();
   const { user } = useUser();
+  const { ready: sdkReady, error: sdkError } = useRazorpay();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
   const handleUpgrade = async () => {
+    if (!sdkReady) {
+      setError('Payment system is still loading. Please wait a moment and try again.');
+      return;
+    }
+    if (!(window as any).Razorpay) {
+      setError('Razorpay SDK failed to load. Please refresh the page and try again.');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -125,12 +136,14 @@ export function PaywallModal({ feature = 'general', onClose, onUpgradeSuccess }:
         };
 
         const rzp = new (window as any).Razorpay(options);
+        console.log('[Razorpay] Creating checkout…');
 
         rzp.on('payment.failed', (response: { error: { description: string } }) => {
           reject(new Error(response.error?.description ?? 'Payment failed. Please try again.'));
         });
 
         rzp.open();
+        console.log('[Razorpay] Checkout opened');
       });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
@@ -250,10 +263,10 @@ export function PaywallModal({ feature = 'general', onClose, onUpgradeSuccess }:
             <>
               <button
                 onClick={handleUpgrade}
-                disabled={loading}
+                disabled={loading || !sdkReady}
                 className="w-full h-14 rounded-2xl font-black text-white text-base flex items-center justify-center gap-3 shadow-xl shadow-violet-300/40 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{
-                  background: loading
+                  background: (loading || !sdkReady)
                     ? '#a78bfa'
                     : 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
                 }}
@@ -263,6 +276,11 @@ export function PaywallModal({ feature = 'general', onClose, onUpgradeSuccess }:
                     <Loader2 className="h-5 w-5 animate-spin" />
                     Processing…
                   </>
+                ) : !sdkReady ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Loading payment…
+                  </>
                 ) : (
                   <>
                     <Zap className="h-5 w-5 fill-yellow-300 text-yellow-300" />
@@ -271,6 +289,12 @@ export function PaywallModal({ feature = 'general', onClose, onUpgradeSuccess }:
                   </>
                 )}
               </button>
+
+              {sdkError && !error && (
+                <p className="text-center text-red-500 text-sm font-medium mt-3">
+                  Payment system failed to load. Please refresh the page.
+                </p>
+              )}
 
               {error && (
                 <p className="text-center text-red-500 text-sm font-medium mt-3">{error}</p>
